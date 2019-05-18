@@ -17,6 +17,7 @@
   @extend .border;
   @extend .bg-secondary;
   @extend .p-2;
+  word-break: break-all;
 }
 
 .chat-message {
@@ -38,12 +39,15 @@
   @extend .flex-column;
   @extend .p-2;
   flex-grow: 1;
+  overflow-y: auto;
+  // word-break: break-all;
   // min-height: 100%;
 }
 
 .chat-message-time {
   @extend .text-muted;
   @extend .my-auto, .mx-2;
+  // word-break: normal;
 }
 
 .chat-message-from {

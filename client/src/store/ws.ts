@@ -7,25 +7,35 @@ const socket = io();
 export const emit = (type: string, payload: any) => socket.emit(type, payload);
 
 export const init = (store: any) => {
-  // console.log("ueah");
+  const { dispatch } = store;
   socket
     .on("connect", () => {
-      console.log("ueahSDDDDDDDDDDDDDDDDDDDDDD");
-      store.dispatch({ type: "ON_CHAT_CONNECTION" });
       emit("authenticate", {
         token:
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVjZTAxMzZhNzgzODFlMWZhOGI3MGEwMCIsImlhdCI6MTU1ODE4OTA3MSwiZXhwIjoxNTU4MjI1MDcxfQ.mRc6459tDB9A16BIO9tZq-s4cZ1vWDbSqQcgjaca_YA"
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVjZTAyZDZlNzY3OTQyMjZjNDY1ODQwMCIsImlhdCI6MTU1ODE5NTU2OSwiZXhwIjoxNTU4MjMxNTY5fQ.duKkdGBdN_bzUt_bCJPwEFc-Vy6IhCJIActCLCp6Azk"
       });
     })
     .on("api_error", (err: any) => {
       console.log("socket error:", err);
     })
     .on("authenticated", () => {
-      store.dispatch({ type: "ON_MESSAGES_NEW", payload: [{ type: "SYSTEM_MESSAGE", time: Date.now(), author: "LEFT", text: "Успешное подключение!" }] });
+      store.dispatch({ type: "ACCOUNT_AUTH_SUCCESS" });
+      // store.dispatch({ type: "ON_MESSAGES_NEW", payload: [{ type: "SYSTEM_MESSAGE", time: Date.now(), author: "LEFT", text: "Успешное подключение!" }] });
     });
 
-  socket.on("dialog.search", () => {
-    console.log("searching..");
+  socket.on("dialog.search", (data: any) => {
+    console.log(data);
+  });
+  socket.on("dialog.leave", (data: any) => {
+    console.log(data);
+  });
+  socket.on("dialog.messages.send", (data: any) => {
+    dispatch({ type: "DIALOG_MESSAGES_SEND_SUCCESS", payload: data });
+    // console.log(data);
+  });
+  socket.on("dialog.messages.fetch", (data: any) => {
+    dispatch({ type: "DIALOG_MESSAGES_FETCH_SUCCESS", payload: data.messages });
+    // console.log(data);
   });
   // socket.on("messages_new", (data: IMessage[]) => {
   //   const state = store.getState();

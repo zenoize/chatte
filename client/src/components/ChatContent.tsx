@@ -3,7 +3,7 @@ import { Spinner } from "reactstrap";
 
 export interface IMessage {
   type: "USER" | "SYSTEM";
-  content: string;
+  message: string;
   author: number;
   time: number;
 }
@@ -21,9 +21,11 @@ export default class ChatContent extends React.Component<IChatContentProps> {
     return (
       <div className="chat-content">
         {loading ? (
-          <Spinner size="sm" color="primary" />
+          <Spinner color="primary" className="m-auto" />
         ) : (
-          messages.map((m,i) => (m.type === "USER" ? <ChatUserMessage key={i} from={m.author === maxId} message={m} /> : <ChatSystemMessage key={i} from={m.author === maxId} message={m} />))
+          messages.map((m, i) =>
+            m.type === "SYSTEM" ? <ChatSystemMessage key={i} from={m.author === maxId} message={m} /> : <ChatUserMessage key={i} from={m.author === maxId} message={m} />
+          )
         )}
       </div>
     );
@@ -32,14 +34,14 @@ export default class ChatContent extends React.Component<IChatContentProps> {
 
 const ChatUserMessage = (props: { message: IMessage; from: boolean }) => (
   <div className={"chat-message chat-message-" + (props.from ? "from" : "to")}>
-    <span className="chat-message-content">{props.message.content}</span>{" "}
+    <span className="chat-message-content">{props.message.message}</span>{" "}
     <small className="chat-message-time">{new Date(props.message.time).toTimeString().split(/:..\s+/)[0]}</small>
   </div>
 );
 
 const ChatSystemMessage = (props: { message: IMessage; from: boolean }) => (
   <div className="chat-system-message">
-    <small className="mx-auto justify-self-center">{props.message.content}</small>
+    <small className="mx-auto justify-self-center">{props.message.message}</small>
     <hr className="w-100 my-1" />
     <small className="mx-auto">{new Date(props.message.time).toTimeString().split(/:..\s+/)[0]}</small>
   </div>

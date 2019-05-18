@@ -3,11 +3,30 @@
 import axios from "axios";
 import { IMessage } from "../../components/ChatContent";
 
-export const sendMessage = () => (dispatch: any, getState: any, emit: any) => {
-  dispatch({ type: "DIALOG_MESSAGE_SEND_LOADING" });
-  emit("dialog.search", { key: "test" });
+export const sendMessage = (message: string) => (dispatch: any, getState: any, emit: any) => {
+  dispatch({ type: "DIALOG_MESSAGES_SEND_LOADING" });
+  emit("dialog.messages.send", { randomId: Math.random(), message });
+};
+
+// export const fetchMessages = () => (dispatch: any, getState: any, emit: any) => {
+//   dispatch({ type: "DIALOG_MESSAGES_FETCH" });
+//   emit("dialog.messages.send", { randomId: Math.random() });
+// };
+
+export const searchDialog = () => (dispatch: any, getState: any, emit: any) => {
+  dispatch({ type: "DIALOG_SEARCH_LOADING" });
+  emit("dialog.search", { randomId: Math.random() });
+};
+
+export const leaveDialog = () => (dispatch: any, getState: any, emit: any) => {
+  dispatch({ type: "DIALOG_LEAVE_LOADING" });
+  emit("dialog.leave", { randomId: Math.random() });
+};
+
+export const fetchMessages = () => (dispatch: any, getState: any, emit: any) => {
+  dispatch({ type: "DIALOG_MESSAGES_FETCH_LOADING" });
   // dispatch({
-  //   type: "DIALOG_MESSAGE_SEND_SUCCESS",
+  //   type: "DIALOG_HISTORY_FETCH_SUCCESS",
   //   payload: [
   //     {
   //       author: 110,
@@ -21,31 +40,7 @@ export const sendMessage = () => (dispatch: any, getState: any, emit: any) => {
   // setTimeout(() => {
   //   dispatch({ type: "DIALOG_HISTORY_FETCH_SUCCESS", payload: [{ author: "D", content: "Я СООБщеНие!", time: Date.now() }] as IMessage[] });
   // }, 2000);
-
-  // emit("messages_fetch");
-  // const state = getState();
-  // dispatch({ type: "MESSAGES_FETCH_SUCCESS", payload: testMessages });
-};
-
-export const fetchMessages = () => (dispatch: any, getState: any, emit: any) => {
-  dispatch({ type: "DIALOG_HISTORY_FETCH_LOADING" });
-  dispatch({
-    type: "DIALOG_HISTORY_FETCH_SUCCESS",
-    payload: [
-      {
-        author: 110,
-        content: "Я СООБщеНЯ СООБщеНие один!Я СООБщеНие один!Я СООБщеНие один!Я СООБщеНие один!ие один!",
-        time: Date.now(),
-        type: "USER"
-      },
-      { author: 111, content: "Я СООБщеНие два!", time: Date.now(), type: "SYSTEM" }
-    ] as IMessage[]
-  });
-  // setTimeout(() => {
-  //   dispatch({ type: "DIALOG_HISTORY_FETCH_SUCCESS", payload: [{ author: "D", content: "Я СООБщеНие!", time: Date.now() }] as IMessage[] });
-  // }, 2000);
-
-  // emit("messages_fetch");
+  emit("dialog.messages.fetch", { randomId: Math.random() });
   // const state = getState();
   // dispatch({ type: "MESSAGES_FETCH_SUCCESS", payload: testMessages });
 };

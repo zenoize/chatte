@@ -12,7 +12,8 @@ const Schema = mongoose.Schema;
 const UserAccountSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
-    required: true
+    required: true,
+    ref: "User"
   },
   username: {
     type: String,

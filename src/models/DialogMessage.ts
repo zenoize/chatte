@@ -6,7 +6,7 @@ export interface IDialogMessage {
   //ID анона, от лица которого отправляем
   anonId: number;
   //ID пользователя, если он отправил сообщение
-  userId: mongoose.Schema.Types.ObjectId;
+  userId?: mongoose.Schema.Types.ObjectId;
   //Текст сообщения
   message: mongoose.Schema.Types.String;
   //Время
@@ -18,7 +18,8 @@ export interface IDialogMessageModel extends mongoose.Document, IDialogMessage {
 const Schema = mongoose.Schema;
 const DialogMessageSchema = new Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
   },
   dialogId: {
     type: mongoose.Schema.Types.ObjectId,

@@ -9,7 +9,8 @@ export interface IUserModel extends mongoose.Document, IUser {}
 const Schema = mongoose.Schema;
 const UserAccountSchema = new Schema({
   dialogId: {
-    type: Schema.Types.ObjectId
+    type: Schema.Types.ObjectId,
+    ref: "DialogSession"
   }
 });
 

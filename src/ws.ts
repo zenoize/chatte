@@ -8,12 +8,15 @@ import * as joi from "joi";
 import { socketError, sendError, IWsApi, createMiddleware } from "./ws/middleware/api";
 // import validate from "./middleware/ws/validate";
 
-import { search } from "./ws/routes/dialog";
+import { search, leave, fetchMessages, sendMessage } from "./ws/routes/dialog";
 
 // import dialog from "./middleware/ws/dialog";
 
 const api: IWsApi = {
-  "dialog.search": search
+  "dialog.search": search,
+  "dialog.leave": leave,
+  "dialog.messages.fetch": fetchMessages,
+  "dialog.messages.send": sendMessage
 };
 
 export default function ws(io: socketIO.Server) {
@@ -27,12 +30,12 @@ export default function ws(io: socketIO.Server) {
     .on(
       "connection",
       socketioJwt.authorize({
-        decodedPropertyName: "user",
+        decodedPropertyName: "payload",
         secret: process.env.JWT_SECRET
       })
     )
     .on("authenticated", async socket => {
-      const user = await User.findById(socket.user.id).exec();
+      const user = await User.findById(socket.payload.id).exec();
       if (!user) return sendError(socket, socketError(401, { msg: "user deleted" }));
       const apiMiddlware = createMiddleware(api, socket);
       socket.use(apiMiddlware);

@@ -9,6 +9,8 @@ import { ArrowUp, Send, User, Settings } from "react-feather";
 export interface IChatProps {
   loading?: boolean;
   sendMessage: (text: string) => void;
+  searchDialog: () => void;
+  leaveDialog: () => void;
 }
 
 export default class Chat extends React.Component<IChatProps> {
@@ -16,9 +18,29 @@ export default class Chat extends React.Component<IChatProps> {
   //   const { loading } = this.props;
   //   if(loading)
   // }
+  state = {
+    message: "",
+    author: false
+  };
+
+  onChange = (e: any) => {
+    this.setState({ [e.target.name]: e.target.value });
+  };
+
+  sendMessage = () => {
+    const { message } = this.state;
+    this.setState({ message: "" });
+    this.props.sendMessage(message);
+  };
+
+  changeAuthor = () => {
+    const { author } = this.state;
+    this.setState({ author: !author });
+  };
 
   render() {
     const { loading } = this.props;
+    const { message, author } = this.state;
     return (
       // <div >
       loading ? (
@@ -30,27 +52,34 @@ export default class Chat extends React.Component<IChatProps> {
               <Settings />
             </Button>
             <ButtonGroup className="ml-auto p-1">
-              <Button color="danger" size="sm">
+              <Button onClick={this.props.leaveDialog} color="danger" size="sm">
                 Отключиться
               </Button>
-              <Button color="primary" size="sm">
+              <Button onClick={this.props.searchDialog} color="primary" size="sm">
                 Новый
               </Button>
             </ButtonGroup>
           </div>
           <ChatContentContainer />
           <div className="chat-footer">
-            <Button className="rounded-pill mr-2 my-auto p-2" color="primary">
-              <ArrowUp />
+            <Button onClick={this.changeAuthor} className="rounded-pill mr-2 my-auto p-2" color="primary">
+              <ArrowUp style={{ transition: "transform 200ms ease", transform: `rotate(${author ? 90 : -90}deg)` }} />
             </Button>
-            <input className="input" placeholder="Введите сообщение" />
-            <Button
-              onClick={() => {
-                this.props.sendMessage("hu");
+            <input
+              name="message"
+              onKeyDown={e => {
+                if (e.key === "Enter") this.sendMessage();
+                if (e.key === "Tab") {
+                  e.preventDefault();
+                  this.changeAuthor();
+                }
               }}
-              className="rounded-pill ml-2 my-auto p-2"
-              color="primary"
-            >
+              value={message}
+              onChange={this.onChange}
+              className="input"
+              placeholder="Введите сообщение"
+            />
+            <Button onClick={this.sendMessage} className="rounded-pill ml-2 my-auto p-2" color="primary">
               <Send />
             </Button>
           </div>
