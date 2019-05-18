@@ -1,0 +1,90 @@
+// @import "~bootstrap/scss/bootstrap";
+
+@import "~bootstrap/scss/bootstrap.scss";
+@import url("https://fonts.googleapis.com/css?family=Roboto:300,400,900");
+
+$theme-colors: (
+  "primary": #6e5ec7,
+  "danger": #ff4136
+);
+
+.overflow-x-hidden {
+  overflow-x: hidden !important;
+}
+
+.area {
+  & > div:nth-child(1) {
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+  }
+  & > div:nth-child(2) {
+    display: none;
+  }
+}
+
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    .border#{$infix}-top {
+      border-top: $border-width solid $border-color !important;
+    }
+    .border#{$infix}-right {
+      border-right: $border-width solid $border-color !important;
+    }
+    .border#{$infix}-bottom {
+      border-bottom: $border-width solid $border-color !important;
+    }
+    .border#{$infix}-left {
+      border-left: $border-width solid $border-color !important;
+    }
+
+    .border#{$infix}-top-0 {
+      border-top: 0 !important;
+    }
+    .border#{$infix}-right-0 {
+      border-right: 0 !important;
+    }
+    .border#{$infix}-bottom-0 {
+      border-bottom: 0 !important;
+    }
+    .border#{$infix}-left-0 {
+      border-left: 0 !important;
+    }
+
+    .border#{$infix}-x {
+      border-left: $border-width solid $border-color !important;
+      border-right: $border-width solid $border-color !important;
+    }
+
+    .border#{$infix}-y {
+      border-top: $border-width solid $border-color !important;
+      border-bottom: $border-width solid $border-color !important;
+    }
+  }
+}
+
+body {
+  margin: 0;
+
+  background-color: #f7f8f8;
+
+  font-style: normal;
+  font-weight: normal;
+  // font-size: 24px;
+  // line-height: 28px;
+}
+
+* {
+  font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
+  // font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.1;
+  // color: #212529;
+  text-align: left;
+  font-style: normal;
+  font-weight: normal;
+}
+
+@import "~bootstrap/scss/bootstrap.scss";

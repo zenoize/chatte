@@ -1,0 +1,26 @@
+.button {
+  /* display: inline; */
+  border: 2px solid transparent;
+  background-color: #6e5ec7;
+  color: white;
+  border-radius: 100px;
+  padding: 0.9rem;
+  /* font-size: 12px; */
+  /* margin: auto; */
+  /* max-height: 2em; */
+  font-weight: lighter;
+  outline: none;
+  box-shadow: 0 0 0pt 0px #6e5ec756;
+  font-size: 0.8em;
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+
+  /* box-sizing: border-box; */
+}
+
+.button:focus {
+  box-shadow: 0 0 0pt 3px #6e5ec756;
+  background-color: #4f448f;
+  /* outline: thick solid #00ff00; */
+  /* outline-ra */
+  /* border: 2px solid  */
+}

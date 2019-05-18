@@ -1,0 +1,131 @@
+.chat {
+  max-width: 768px;
+
+  background-color: white;
+  margin: auto;
+  /* padding: 10px; */
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+
+  display: flex;
+  flex-direction: column;
+}
+
+@media all and (min-width: 425px) {
+  .chat {
+    width: 80%;
+    /* height 90$ */
+    /* min-width: 350px; */
+    /* max-width: 768px; */
+    max-height: 90vh;
+    min-height: 90vh;
+    /* margin:  */
+    /* min-height: calc(100vh - 30px); */
+  }
+}
+
+@media all and (max-width: 425px) {
+  .chat {
+    /* width: 80%; */
+    /* height 90$ */
+    min-width: 100%;
+    /* max-width: 768px; */
+    max-height: 100vh;
+    min-height: 100vh;
+    /* margin:  */
+    /* min-height: calc(100vh - 30px); */
+  }
+}
+
+.chat-top-bar {
+  background-color: white;
+  /* min-height: 20px; */
+  padding: 10px;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.1);
+  display: flex;
+}
+
+.chat-bottom-bar {
+  background-color: white;
+  min-height: 7 0px;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.1);
+  display: flex;
+  /* justify-content: end; */
+  margin-top: auto;
+  padding: 10px;
+}
+
+.chat-user {
+  background-color: #6d5ec7;
+  margin: auto 0px auto 0px;
+  padding: 5px;
+  border-radius: 100px;
+  /* padding: auto 0px auto 0px; */
+  /* align-content: center; */
+}
+
+.chat-user-icon {
+  color: white;
+  /* margin-top: 50%; */
+  display: block;
+  size: 10;
+  /* padding: 1px; */
+}
+
+.chat-content {
+  display: flex;
+  flex-direction: column;
+  /* -moz-flex */
+  /* overflow-x: scroll; */
+  overflow-x: hidden;
+  /* text-overflow: ellipsis; */
+  overflow-wrap: break-word;
+  /* padd */
+  /* padding-bottom: 20px; */
+  /* transition: all 1s ease; */
+}
+
+.chat-info-division {
+  border: 1px solid #d9ddff;
+  margin: 2px 0px 2px 0px;
+}
+
+@keyframes chat-typing {
+  0% {
+    color: #9a9db66e;
+    /* text */
+    /* color: ; */
+  }
+  50% {
+    /* width: 0%; */
+    color: #9a9db6;
+  }
+  100% {
+    color: #9a9db66e;
+    /* width: 10%; */
+  }
+}
+
+.chat-typing {
+  overflow: hidden;
+  word-wrap: normal;
+  /* display: block;/ */
+  /* display: flex; */
+  /* transition: color 0.15s ease; */
+  /* animation:  1s forwards ease !important;  */
+  animation: chat-typing 1s infinite ease;
+
+  /* content: " ."; */
+  /* animation: dots 1s steps(5, end) infinite; */
+
+  /* background:  */
+  /* background-clip: text; */
+  /* -webkit-text-fill-color: transparent; */
+}
+
+/* .chat-typing::after {
+  content: "suka";
+} */
+
+.chat-no-typing {
+  color: transparent;
+}

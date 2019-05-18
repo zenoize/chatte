@@ -1,0 +1,16 @@
+.input {
+  @extend .border-bottom;
+  @extend .w-100;
+  @extend .p-2;
+  border: 0;
+  @extend .mb-2;
+  box-shadow: 0px 0px 0px adjust-color($primary, $alpha: -0.8);
+  transition: box-shadow 100ms ease;
+  &:focus {
+    box-shadow: 0px 3px 0px adjust-color($primary, $alpha: -0.8);
+  }
+
+  outline: none;
+}
+
+// .input

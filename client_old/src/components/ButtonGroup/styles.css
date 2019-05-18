@@ -1,0 +1,15 @@
+.button-group {
+  /* display: block; */
+}
+
+.button-group-button-center {
+  border-radius: 0px !important;
+}
+
+.button-group-button-left {
+  border-radius: 100px 0px 0px 100px !important;
+}
+
+.button-group-button-right {
+  border-radius: 0px 100px 100px 0px !important;
+}
