@@ -9,6 +9,8 @@ export enum DialogStatus {
 export interface IDialogSession {
   time?: number;
   status: DialogStatus;
+  anonTokens: string[];
+  anonIds: string[];
   // userId?: mongoose.Schema.Types.ObjectId;
 }
 
@@ -22,9 +24,18 @@ const DialogSessionSchema = new Schema({
   },
   status: {
     type: Schema.Types.Number,
-    default: DialogStatus.STOP,
-
-  }
+    default: DialogStatus.STOP
+  },
+  anonTokens: {
+    type: [Schema.Types.String],
+    required: true,
+    unique: true,
+    validate: v => v.length == 2
+  },
+  // anonIds: {
+  //   type: [Schema.Types.String],
+  //   required: true
+  // }
   // userId: {
   //   type: Schema.Types.ObjectId,
   //   ref: "User",

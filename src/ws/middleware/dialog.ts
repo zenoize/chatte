@@ -2,16 +2,13 @@ import { WsMiddleware, socketError } from "./api";
 import * as joi from "joi";
 import User from "../../models/User";
 
-const middleware: WsMiddleware = async (socket, method, data) => {
+const middleware: WsMiddleware = async (socket, method, data, state) => {
   const user = await User.findById(socket.payload.id).exec();
   if (!user.dialogId) throw socketError(400, { method, msg: "you are not in dialog" });
-  socket.payload.dialogId = user.dialogId;
-  // socket.user.
-  // const result = joi
-  //   .object()
-  //   .keys(schema)
-  //   .validate(data, { allowUnknown: true, convert: true });
-  // if (result.error) throw socketError(400, { method, msg: "invalid" });
+  const bots = state.bots.get(user.dialogId.toString());
+
+  socket.payload.bots = bots.bots;
+  socket.payload.dialogId = user.dialogId.toString();
 };
 
 export default middleware;

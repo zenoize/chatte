@@ -1,6 +1,7 @@
 import * as socketIO from "socket.io";
 import * as parser from "socket.io-parser";
 import * as colors from "colors";
+import Bot from "../../bot";
 
 type SocketError = {
   code: number;
@@ -14,8 +15,8 @@ export const sendError = (socket: socketIO.Socket, error?: SocketError) => {
   socket.emit("api_error", error);
 };
 
-export type ApiSocket = socketIO.Socket & { payload: { id: string; token?: string; [key: string]: any } };
-export type WsMiddleware<T = any> = (socket: ApiSocket, method: string, data: T) => Promise<any>;
+export type ApiSocket = socketIO.Socket & { payload: { bots?: Bot[]; dialogId?: string; id?: string; token?: string; [key: string]: any } };
+export type WsMiddleware<T = any> = (socket: ApiSocket, method: string, data: T, state: any) => Promise<any>;
 export type SocketIOMiddleware = (packet: socketIO.Packet, next: (err?: any) => void) => void;
 
 export interface IWsApi {
@@ -23,6 +24,7 @@ export interface IWsApi {
 }
 
 export interface IWsApiRouteParams {
+  state: any;
   data: any;
   socket: ApiSocket;
   error: (code: number, msg?: string) => SocketError;
@@ -36,7 +38,7 @@ export interface IWsApiRoute {
 
 const decoder = new parser.Decoder();
 
-export const createMiddleware: (wsApi: IWsApi, socket: socketIO.Socket) => SocketIOMiddleware = (wsApi, socket) => async packet => {
+export const createMiddleware: (wsApi: IWsApi, socket: ApiSocket, state: any) => SocketIOMiddleware = (wsApi, socket, state) => async packet => {
   const methodName = packet[0];
   const query = packet[1];
   const method = wsApi[methodName];
@@ -48,8 +50,12 @@ export const createMiddleware: (wsApi: IWsApi, socket: socketIO.Socket) => Socke
   logError(colors.yellow("WS_METHOD"), query);
   try {
     if (!method) throw socketError(405, { msg: "method not defined", method: methodName });
-    await Promise.all(method.middlware.map(m => m(socket as ApiSocket, methodName, query)));
+
+    // socket.payload = {};
+
+    await Promise.all(method.middlware.map(m => m(socket as ApiSocket, methodName, query, state)));
     await method.execute({
+      state: state,
       data: packet[1],
       socket: socket as any,
       error: (code, msg) => socketError(code, { msg, method: methodName }),

@@ -34,9 +34,14 @@ export const searchDialog = () => (dispatch: any, getState: any, emit: any) => {
   emit("dialog.search", { randomId: Math.random() });
 };
 
+export const createDialog = () => (dispatch: any, getState: any, emit: any) => {
+  dispatch({ type: "DIALOG_CREATE_LOADING" });
+  emit("dialog.create", { randomId: Math.random() });
+};
+
 export const leaveDialog = () => (dispatch: any, getState: any, emit: any) => {
-  dispatch({ type: "DIALOG_LEAVE_LOADING" });
-  emit("dialog.leave", { randomId: Math.random() });
+  dispatch({ type: "DIALOG_STOP_LOADING" });
+  emit("dialog.stop", { randomId: Math.random() });
 };
 
 export const fetchMessages = () => (dispatch: any, getState: any, emit: any) => {

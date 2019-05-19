@@ -12,8 +12,8 @@ class ChatContentContainer extends React.Component<any> {
     if (accountStatus === "SUCCESS" && prevAccountStatus !== "SUCCESS" && historyStatus !== "SUCCESS") this.props.fetchMessages();
   }
   render() {
-    const { history } = this.props;
-    return <ChatContent users={[110, 111]} messages={history.entity.messages} loading={history.status.fetch !== "SUCCESS"} />;
+    const { history, dialog } = this.props;
+    return <ChatContent users={dialog.anonIds || []} messages={history.entity.messages} loading={history.status.fetch !== "SUCCESS"} />;
   }
 }
 
@@ -22,7 +22,8 @@ const mapDispatchToProps = {
 };
 const mapStateToProps = (state: any) => ({
   history: state.chat.history,
-  account: state.chat.account
+  account: state.chat.account,
+  dialog: state.chat.dialog
 });
 
 export default connect(

@@ -25,20 +25,33 @@ export const init = (store: any) => {
       switch (err.method) {
         case "account.auth": {
           sessionStorage.removeItem("auth-token");
-          store.dispatch("ACCOUNT_LOGOUT");
+          store.dispatch({ type: "ACCOUNT_LOGOUT" });
         }
       }
-    })
-    // .on("error", (data: any) => {
-    //   console.log(data);
-    // });
+    });
+  // .on("error", (data: any) => {
+  //   console.log(data);
+  // });
 
-  socket.on("dialog.search", (data: any) => {
-    console.log(data);
+  socket.on("dialog.stop", (data: any) => {
+    dispatch({ type: "DIALOG_STOP_SUCCESS", payload: data });
   });
-  socket.on("dialog.leave", (data: any) => {
-    console.log(data);
+
+  socket.on("dialog.create", (data: any) => {
+    dispatch({ type: "DIALOG_CREATE_SUCCESS", payload: data });
   });
+
+  socket.on("dialog.founded", (data: any) => {
+    dispatch({ type: "DIALOG_SEARCH_SUCCESS", payload: data });
+  });
+
+  socket.on("dialog.messages.new", (message: any) => {
+    dispatch({ type: "DIALOG_MESSAGES_NEW", payload: message });
+  });
+
+  // socket.on("dialog.leave", (data: any) => {
+  //   dispatch({ type: "DIALOG_STOP_SUCCESS", payload: data });
+  // });
   socket.on("dialog.messages.send", (data: any) => {
     dispatch({ type: "DIALOG_MESSAGES_SEND_SUCCESS", payload: data });
     // console.log(data);

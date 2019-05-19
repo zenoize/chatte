@@ -4,7 +4,8 @@ import User from "../../models/User";
 import * as jwt from "jsonwebtoken";
 
 const middleware: WsMiddleware = async (socket, method, data) => {
-  const token = data.token || socket.payload.token;
+  const payload = (socket.payload && socket.payload.token) || {};
+  const token = data.token || payload;
   if (!token) throw socketError(403, { method, msg: "token required" });
   else
     try {

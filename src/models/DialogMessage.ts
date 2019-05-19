@@ -2,7 +2,7 @@ import * as mongoose from "mongoose";
 
 export interface IDialogMessage {
   //ID диалога
-  dialogId: mongoose.Schema.Types.ObjectId;
+  dialogId: string;
   //ID анона, от лица которого отправляем
   anonId: number;
   //ID пользователя, если он отправил сообщение

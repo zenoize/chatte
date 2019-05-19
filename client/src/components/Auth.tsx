@@ -1,10 +1,11 @@
 import React from "react";
-import { Spinner, Input, Button } from "reactstrap";
+import { Spinner, Button } from "reactstrap";
 import ChatContentContainer from "./ChatContentContainer";
 import ButtonGroup from "./ButtonGroup";
 
 import { ArrowUp, Send, User, Settings } from "react-feather";
 import { CSSTransition } from "react-transition-group";
+import Input from "./Input";
 // import "../scss/chat.scss";
 
 export interface IAuthProps {
@@ -25,13 +26,9 @@ export default class Auth extends React.Component<IAuthProps> {
       <div className="auth-panel position-relative">
         <div>
           <span className="px-2">Никнейм</span>
-          <div className="overflow-hidden">
-            <input className="input" placeholder="Пупочкин" />
-          </div>
+          <Input placeholder="Пупочкин" />
           <span className="px-2">Пароль</span>
-          <div className="overflow-hidden">
-            <input className="input" placeholder="q*er*y" />
-          </div>
+          <Input placeholder="qwery" />
         </div>
         <CSSTransition classNames="fade" in={loading} mountOnEnter unmountOnExit timeout={200} appear>
           <div className={"position-absolute w-100 h-100 d-flex"} style={{ top: 0, left: 0 }}>

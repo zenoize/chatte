@@ -1,16 +1,26 @@
 import React from "react";
-import { Spinner, Input, Button } from "reactstrap";
+import { Spinner, Button } from "reactstrap";
 import ChatContentContainer from "./ChatContentContainer";
 import ButtonGroup from "./ButtonGroup";
 
 import { ArrowUp, Send, User, Settings } from "react-feather";
+import Input from "./Input";
+import { ActionStatus } from "../store/types";
 // import "../scss/chat.scss";
+
+export enum DialogStatus {
+  SEARCH,
+  STOP,
+  DIALOG
+}
 
 export interface IChatProps {
   loading?: boolean;
+  dialogStatus?: DialogStatus;
   sendMessage: (text: string) => void;
   searchDialog: () => void;
   leaveDialog: () => void;
+  createDialog: () => void;
 }
 
 export default class Chat extends React.Component<IChatProps> {
@@ -39,7 +49,7 @@ export default class Chat extends React.Component<IChatProps> {
   };
 
   render() {
-    const { loading } = this.props;
+    const { loading, dialogStatus } = this.props;
     const { message, author } = this.state;
     return (
       // <div >
@@ -52,11 +62,19 @@ export default class Chat extends React.Component<IChatProps> {
               <Settings />
             </Button>
             <ButtonGroup className="ml-auto p-1">
-              <Button onClick={this.props.leaveDialog} color="danger" size="sm">
-                Отключиться
-              </Button>
-              <Button onClick={this.props.searchDialog} color="primary" size="sm">
-                Новый
+              {dialogStatus &&
+                (dialogStatus === DialogStatus.DIALOG && (
+                  <Button onClick={this.props.leaveDialog} color="danger" size="sm">
+                    Отключиться
+                  </Button>
+                ))}
+              <Button
+                disabled={!dialogStatus && dialogStatus === DialogStatus.SEARCH}
+                onClick={dialogStatus ? this.props.searchDialog : this.props.createDialog}
+                color="primary"
+                size="sm"
+              >
+                {dialogStatus ? "Новый" : "Создать диалог"}
               </Button>
             </ButtonGroup>
           </div>
@@ -65,7 +83,7 @@ export default class Chat extends React.Component<IChatProps> {
             <Button onClick={this.changeAuthor} className="rounded-pill mr-2 my-auto p-2" color="primary">
               <ArrowUp style={{ transition: "transform 200ms ease", transform: `rotate(${author ? 90 : -90}deg)` }} />
             </Button>
-            <input
+            <Input
               name="message"
               onKeyDown={e => {
                 if (e.key === "Enter") this.sendMessage();
@@ -79,6 +97,20 @@ export default class Chat extends React.Component<IChatProps> {
               className="input"
               placeholder="Введите сообщение"
             />
+            {/* <input
+              name="message"
+              onKeyDown={e => {
+                if (e.key === "Enter") this.sendMessage();
+                if (e.key === "Tab") {
+                  e.preventDefault();
+                  this.changeAuthor();
+                }
+              }}
+              value={message}
+              onChange={this.onChange}
+              className="input"
+              placeholder="Введите сообщение"
+            /> */}
             <Button onClick={this.sendMessage} className="rounded-pill ml-2 my-auto p-2" color="primary">
               <Send />
             </Button>

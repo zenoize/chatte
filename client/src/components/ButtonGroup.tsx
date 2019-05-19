@@ -1,7 +1,7 @@
 import React from "react";
 
 export interface IButtonGroupProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactElement<any>[];
+  children: any;
 }
 
 class ButtonGroup extends React.Component<IButtonGroupProps> {
@@ -13,6 +13,7 @@ class ButtonGroup extends React.Component<IButtonGroupProps> {
         {!childs
           ? ""
           : childs.map((c, i) => {
+              if (!c) return c;
               const props: any = {
                 key: c.key || `${i}`
               };

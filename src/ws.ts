@@ -1,120 +1,156 @@
 import * as socketIO from "socket.io";
-import * as socketioJwt from "socketio-jwt";
 
-import User from "./models/User";
-import DialogSession, { IDialogSession, DialogStatus } from "./models/DialogSession";
-import * as joi from "joi";
-import { socketError, sendError, IWsApi, createMiddleware, ApiSocket } from "./ws/middleware/api";
-// import validate from "./middleware/ws/validate";
+import { IWsApi, createMiddleware, ApiSocket } from "./ws/middleware/api";
 
-import { search, leave, fetchMessages, sendMessage } from "./ws/routes/dialog";
+import { create, leave, fetchMessages, sendMessage, search, stop } from "./ws/routes/dialog";
 import { auth } from "./ws/routes/account";
+import Bot from "./bot";
+import User from "./models/User";
+import DialogMessage, { IDialogMessage } from "./models/DialogMessage";
+import DialogSession, { DialogStatus } from "./models/DialogSession";
 
 // import dialog from "./middleware/ws/dialog";
 
 const api: IWsApi = {
+  "dialog.create": create,
   "dialog.search": search,
+  "dialog.stop": stop,
   "dialog.leave": leave,
   "dialog.messages.fetch": fetchMessages,
   "dialog.messages.send": sendMessage,
   "account.auth": auth
 };
 
-export default function ws(io: socketIO.Server) {
-  // io.sockets.on("connection", s => {
-  //   s.on("message", () => {
-  //     console.log("message!");
+export default async function ws(io: socketIO.Server) {
+  const state = {
+    bots: new Map<string, { bots: Bot[] }>(),
+    bindBot: async (token: string[], dialogId: string) => {
+      const bots = await Promise.all(
+        token.map(async t => {
+          const b = new Bot();
+          await b.auth(t);
+
+          // if (b.info.dialog.id) await DialogSession.findByIdAndUpdate(dialogId, { status: DialogStatus.DIALOG }).exec();
+          // else await DialogSession.findByIdAndUpdate(dialogId, { status: DialogStatus.STOP }).exec();
+
+          return b;
+        })
+      );
+
+      if (bots.find(b => !b.info.dialog.id)) {
+        await Promise.all(bots.map(b => b.leaveDialog()));
+        await DialogSession.findByIdAndUpdate(dialogId, { status: DialogStatus.STOP }).exec();
+        io.to("dialog-" + dialogId).emit("dialog.stop");
+      }
+
+      bots.forEach(async (b, i) => {
+        await b.leaveDialog().catch(() => {});
+        b.chat.on("messages.new", async e => {
+          if (e.data.senderId !== b.info.user.id) {
+            const msg = await bots.find(bot => b !== bot).sendMessage(e.data.message);
+          } else {
+            io.to("dialog-" + dialogId).emit(
+              "dialog.messages.new",
+              await DialogMessage.create({ time: Date.now(), anonId: e.data.senderId, dialogId, message: e.data.message } as IDialogMessage)
+            );
+          }
+        });
+        // b.chat.on("dialog.opened", () => {});
+        b.chat.on("dialog.closed", async e => {
+          await DialogSession.findByIdAndUpdate(dialogId, { status: DialogStatus.STOP });
+          await Promise.all(bots.map(b => b.leaveDialog()));
+          io.to("dialog-" + dialogId).emit("dialog.stop");
+        });
+      });
+      return bots;
+    }
+  };
+
+  const users = await User.find()
+    .ne("dialogId", null)
+    .populate("dialogId")
+    .exec();
+
+  const botUsers = await Promise.all(
+    users.map(async (u: any, i) => {
+      return [
+        u.dialogId._id.toString(),
+        {
+          bots: await state.bindBot(u.dialogId.anonTokens, u.dialogId._id.toString())
+        }
+      ];
+    })
+  );
+
+  state.bots = new Map(botUsers as any);
+
+  io.on("connection", async (socket: ApiSocket) => {
+    const apiMiddlware = createMiddleware(api, socket, state);
+    socket.use(apiMiddlware);
+  });
+  // users.map(async (u:any) => {
+  //   const bots = await u.dialogId.anonTokens.map(async t => {})
+  //     // state.addBot(u.dialogId._id);
+
+  //     // const bot = new Bot();
+  //     // await bot.auth(t);
+  //     // return bot;
   //   });
   // });
-  // return io;
 
-  // io.use(
-  //   socketioJwt.authorize({
-  //     secret: process.env.JWT_SECRET,
-  //     decodedPropertyName: "payload",
-  //     handshake: true
+  // const botUsers = await Promise.all(
+  //   users.map(async (u: any, i) => {
+  //     return [
+  //       u.dialogId._id,
+  //       {
+  //         bots: await Promise.all(
+  //           u.dialogId.anonTokens.map(async t => {
+  //             state.addBot(u.dialogId._id)
+
+  //             // const bot = new Bot();
+  //             // await bot.auth(t);
+  //             // return bot;
+  //           })
+  //         )
+  //       }
+  //     ];
   //   })
   // );
 
-  io.on(
-    "connection",
-    async (socket: ApiSocket) => {
-      // socket.on("authenticated", async socket => {
-      // const user = await User.findById(socket.payload.id).exec();
-      // if (!user) return sendError(socket, socketError(401, { msg: "user deleted" }));
-      const apiMiddlware = createMiddleware(api, socket);
-      socket.use(apiMiddlware);
-    }
-    // return handleWsApi(socket);
-    // })
-  );
-
-  // io.sockets.on("*", () => {
-  //   console.log("what");
+  // state.bots = new Map(botUsers as any);
+  // state.bots.forEach((bot, dialogId) => {
+  //   bot.bots.forEach(async (b, i) => {
+  //     await b.leaveDialog().catch(() => {});
+  //     b.chat.on("messages.new", async e => {
+  //       if (e.data.senderId !== b.info.user.id) {
+  //         const msg = await bot.bots.find(bot => b !== bot).sendMessage(e.data.message);
+  //       } else {
+  //         io.to("dialog-" + dialogId).emit(
+  //           "dialog.messages.new",
+  //           await DialogMessage.create({ time: Date.now(), anonId: e.data.senderId, dialogId, message: e.data.message } as IDialogMessage)
+  //           // await createMessage({
+  //           //   anonId: e.data.senderId,
+  //           //   time: Date.now(),
+  //           //   dialogId: dialogId as any,
+  //           //   message: e.data.message
+  //           // })
+  //         );
+  //         // sendMessage.execute({ socket, error, success, data: { message: e.data.message, anonId: e.data.senderId } });
+  //       }
+  //     });
+  //     b.chat.on("dialog.closed", async e => {
+  //       await DialogSession.findByIdAndUpdate(dialogId, { status: DialogStatus.STOP });
+  //       await Promise.all(bot.bots.map(b => b.leaveDialog().catch(() => {})));
+  //       io.to("dialog-" + dialogId).emit("dialog.stop");
+  //     });
+  //   });
   // });
-  //   io.sockets.on(
-  //   "connection",
-  //   socketioJwt.authorize(
-  //     {
-  //       decodedPropertyName: "payload",
-  //       secret: process.env.JWT_SECRET
-  //     },
-  //     () => {
-  //       io.sockets.on("connection", socket => {
-  //         socket.on("authenticated", async socket => {
-  //           const user = await User.findById(socket.payload.id).exec();
-  //           if (!user) return sendError(socket, socketError(401, { msg: "user deleted" }));
-  //           const apiMiddlware = createMiddleware(api, socket);
-  //           socket.use(apiMiddlware);
-  //           socket.on("dialog.search", () => {
-  //             console.log("wuat");
-  //           });
-  //           // return handleWsApi(socket);
-  //         });
-  //       });
-  //     }
-  //   )
-  // );
+
+  // bindBot(socket);
+
+  // socket.on('disconnected')
+
+  // socket.payload.
+
+  // users
 }
-
-const handleWsApi = (socket: socketIO.Socket & { userId: string }) => {
-  // const { userId } = socket;
-  // socket.use(packet => {
-  //   packet.forEach(p => {});
-  // });
-  // try {
-  //   socket.use()
-  //   socket.on("dialog.search", async data => {
-  //     const dialogDoc: IDialogSession = { status: DialogStatus.SEARCH };
-  //     const dialog = await DialogSession.create(dialogDoc);
-  //     socket.join("dialog-" + dialog.id);
-  //     await User.findByIdAndUpdate(userId, { dialogId: dialog.id });
-  //     return { dialogId: dialog.id };
-  //   });
-  //   socket.on("dialog.sendMessage", async data => {
-  //     await validate(data, { message: joi.string() });
-  //     // await inDialog()
-  //   });
-  // } catch (err) {
-  //   sendError(socket, err && err.message && { msg: err.message, code: err.code || 400 });
-  // }
-  // });
-};
-
-//   socket.on("messages_send", async data => {
-//     // const user = (await ChatUser.findById(socket.userId).exec()) as any;
-//     // const docs = (await Promise.all(
-//     //   data.map(msg => new ChatMessage({ sessionId: user.sessionId, type: "USER_MESSAGE", time: Date.now(), text: msg.text, author: msg.author, randomId: msg.randomId }).save())
-//     // )) as any;
-//     // const messages = (await ChatMessage.create(docs)) as any;
-//     // io.sockets.emit("messages_new", messages.map(m => m.toObject()));
-//   });
-
-//   socket.on("messages_fetch", async data => {
-//     // Model.populate?
-//     // const user = await ChatUser.findById(socket.userId).exec();
-//     // const messages = await ChatMessage.find({ sessionId: user.sessionId });
-//     // socket.emit("messages_fetch", messages);
-//   });
-// });
-// }
