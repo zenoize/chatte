@@ -95,7 +95,51 @@ body {
   font-weight: normal;
 }
 
+.fade-enter {
+  // @extend .invisible;
+
+  // transform: scale(0.2);
+  background-color: transparent;
+  // transition: all 0.5s ease;
+}
+
+.fade-enter-active {
+  // transform: scale(1);
+  transition: all 0.1s ease;
+  background-color: white;
+  // transition: all 400ms ease;
+}
+
+.fade-enter-done {
+  // transform: scale(1);
+  transition: all 0.1s ease;
+  background-color: white;
+  > div {
+    transition: color 0.3s ease;
+  }
+  // transition: all 400ms ease;
+}
+
+.fade-exit {
+  background-color: rgba(255, 255, 255, 1);
+  // > div {
+  //   // color: transparent !important;
+  // }
+}
+
+.fade-exit-active {
+  // @extend .invisible;
+  transition: transform 0.3s ease, background-color 0.1s;
+  background-color: transparent;
+  // transform: scale(0);
+  > div {
+    color: transparent !important;
+    transition: color 0.3s ease;
+  }
+}
+
 @import "~bootstrap/scss/bootstrap.scss";
 @import "./app.scss";
 @import "./chat.scss";
+@import "./auth.scss";
 @import "./input.scss";

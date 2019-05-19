@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import ChatContent from "./ChatContent";
-import { fetchMessages } from "../store/actions/dialogActions";
+import { fetchMessages } from "../store/actions/chatActions";
 
 class ChatContentContainer extends React.Component<any> {
   componentDidUpdate(prev: any) {

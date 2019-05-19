@@ -1,14 +1,14 @@
 import * as socketIO from "socket.io";
 import * as socketioJwt from "socketio-jwt";
 
-import auth from "./http/middleware/auth";
 import User from "./models/User";
 import DialogSession, { IDialogSession, DialogStatus } from "./models/DialogSession";
 import * as joi from "joi";
-import { socketError, sendError, IWsApi, createMiddleware } from "./ws/middleware/api";
+import { socketError, sendError, IWsApi, createMiddleware, ApiSocket } from "./ws/middleware/api";
 // import validate from "./middleware/ws/validate";
 
 import { search, leave, fetchMessages, sendMessage } from "./ws/routes/dialog";
+import { auth } from "./ws/routes/account";
 
 // import dialog from "./middleware/ws/dialog";
 
@@ -16,7 +16,8 @@ const api: IWsApi = {
   "dialog.search": search,
   "dialog.leave": leave,
   "dialog.messages.fetch": fetchMessages,
-  "dialog.messages.send": sendMessage
+  "dialog.messages.send": sendMessage,
+  "account.auth": auth
 };
 
 export default function ws(io: socketIO.Server) {
@@ -26,24 +27,54 @@ export default function ws(io: socketIO.Server) {
   //   });
   // });
   // return io;
-  io.sockets
-    .on(
-      "connection",
-      socketioJwt.authorize({
-        decodedPropertyName: "payload",
-        secret: process.env.JWT_SECRET
-      })
-    )
-    .on("authenticated", async socket => {
-      const user = await User.findById(socket.payload.id).exec();
-      if (!user) return sendError(socket, socketError(401, { msg: "user deleted" }));
+
+  // io.use(
+  //   socketioJwt.authorize({
+  //     secret: process.env.JWT_SECRET,
+  //     decodedPropertyName: "payload",
+  //     handshake: true
+  //   })
+  // );
+
+  io.on(
+    "connection",
+    async (socket: ApiSocket) => {
+      // socket.on("authenticated", async socket => {
+      // const user = await User.findById(socket.payload.id).exec();
+      // if (!user) return sendError(socket, socketError(401, { msg: "user deleted" }));
       const apiMiddlware = createMiddleware(api, socket);
       socket.use(apiMiddlware);
-      socket.on('dialog.search', () => {
-        console.log('wuat');
-      })
-      // return handleWsApi(socket);
-    });
+    }
+    // return handleWsApi(socket);
+    // })
+  );
+
+  // io.sockets.on("*", () => {
+  //   console.log("what");
+  // });
+  //   io.sockets.on(
+  //   "connection",
+  //   socketioJwt.authorize(
+  //     {
+  //       decodedPropertyName: "payload",
+  //       secret: process.env.JWT_SECRET
+  //     },
+  //     () => {
+  //       io.sockets.on("connection", socket => {
+  //         socket.on("authenticated", async socket => {
+  //           const user = await User.findById(socket.payload.id).exec();
+  //           if (!user) return sendError(socket, socketError(401, { msg: "user deleted" }));
+  //           const apiMiddlware = createMiddleware(api, socket);
+  //           socket.use(apiMiddlware);
+  //           socket.on("dialog.search", () => {
+  //             console.log("wuat");
+  //           });
+  //           // return handleWsApi(socket);
+  //         });
+  //       });
+  //     }
+  //   )
+  // );
 }
 
 const handleWsApi = (socket: socketIO.Socket & { userId: string }) => {

@@ -87,14 +87,16 @@ export class Reducer {
   }
   entity(entity: string, path: string, data: any) {
     const { _state: s } = this;
-    const e = s[entity].entity || {};
+    let e = s[entity].entity || {};
     let root = e;
-    path.split(".").forEach((p, i, a) => {
-      if (i === a.length - 1) return (root[p] = data);
-      if (root[p] === undefined) root[p] = {};
-      else root[p] = { ...root[p] };
-      root = root[p];
-    });
+    if (path !== ".")
+      path.split(".").forEach((p, i, a) => {
+        if (i === a.length - 1) return (root[p] = data);
+        if (root[p] === undefined) root[p] = {};
+        else root[p] = { ...root[p] };
+        root = root[p];
+      });
+    else e = { ...root, ...data };
     this._state = { ...s, [entity]: { ...s[entity], entity: e } };
     return this;
   }

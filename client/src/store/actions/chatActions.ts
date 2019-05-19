@@ -8,6 +8,22 @@ export const sendMessage = (message: string) => (dispatch: any, getState: any, e
   emit("dialog.messages.send", { randomId: Math.random(), message });
 };
 
+export const setToken = (token: string) => {
+  sessionStorage.setItem("auth-token", token);
+  return { type: "ACCOUNT_AUTH_SUCCESS", payload: token };
+};
+
+export const logIn = (username: string, password: string) => async (dispatch: any) => {
+  try {
+    dispatch({ type: "ACCOUNT_AUTH_LOADING" });
+    const res = await axios.get("/api/account/auth", { params: { username, password } });
+    sessionStorage.setItem("auth-token", res.data.token);
+    dispatch({ type: "ACCOUNT_AUTH_SUCCESS", payload: res.data });
+  } catch (err) {
+    dispatch({ type: "ACCOUNT_AUTH_ERROR" });
+    console.log("action error:", err);
+  }
+};
 // export const fetchMessages = () => (dispatch: any, getState: any, emit: any) => {
 //   dispatch({ type: "DIALOG_MESSAGES_FETCH" });
 //   emit("dialog.messages.send", { randomId: Math.random() });

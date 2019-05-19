@@ -8,20 +8,30 @@ export const emit = (type: string, payload: any) => socket.emit(type, payload);
 
 export const init = (store: any) => {
   const { dispatch } = store;
+
   socket
     .on("connect", () => {
-      emit("authenticate", {
-        token:
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVjZTAyZDZlNzY3OTQyMjZjNDY1ODQwMCIsImlhdCI6MTU1ODE5NTU2OSwiZXhwIjoxNTU4MjMxNTY5fQ.duKkdGBdN_bzUt_bCJPwEFc-Vy6IhCJIActCLCp6Azk"
+      socket.emit("account.auth", {
+        token: sessionStorage.getItem("auth-token")
+        //"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVjZTAyZDZlNzY3OTQyMjZjNDY1ODQwMCIsImlhdCI6MTU1ODI2NDUwMCwiZXhwIjoxNTU4MzAwNTAwfQ.Zo9s73WIJNdtYrXUKenDrnVFgJ0BIfDOKGkcM-UX820"
+      });
+      socket.once("account.auth", (data: any) => {
+        console.log("auth succeful:", data);
+        store.dispatch({ type: "ACCOUNT_AUTH_SUCCESS", payload: data });
       });
     })
     .on("api_error", (err: any) => {
       console.log("socket error:", err);
+      switch (err.method) {
+        case "account.auth": {
+          sessionStorage.removeItem("auth-token");
+          store.dispatch("ACCOUNT_LOGOUT");
+        }
+      }
     })
-    .on("authenticated", () => {
-      store.dispatch({ type: "ACCOUNT_AUTH_SUCCESS" });
-      // store.dispatch({ type: "ON_MESSAGES_NEW", payload: [{ type: "SYSTEM_MESSAGE", time: Date.now(), author: "LEFT", text: "Успешное подключение!" }] });
-    });
+    // .on("error", (data: any) => {
+    //   console.log(data);
+    // });
 
   socket.on("dialog.search", (data: any) => {
     console.log(data);

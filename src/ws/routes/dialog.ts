@@ -4,6 +4,7 @@ import User from "../../models/User";
 import validateMw from "../middleware/validate";
 import dialogMw from "../middleware/dialog";
 import randomIdMw from "../middleware/randomId";
+import authMw from "../middleware/auth";
 
 import { IWsApiRoute } from "../middleware/api";
 import DialogMessage, { IDialogMessage } from "../../models/DialogMessage";
@@ -11,7 +12,7 @@ import DialogMessage, { IDialogMessage } from "../../models/DialogMessage";
 import * as joi from "joi";
 
 export const leave: IWsApiRoute = {
-  middlware: [randomIdMw, dialogMw],
+  middlware: [authMw, randomIdMw, dialogMw],
   execute: async ({ socket, error, success, data }) => {
     const { id } = socket.payload;
     await User.findOneAndUpdate({ _id: id }, { dialogId: null }).exec();
@@ -22,7 +23,7 @@ export const leave: IWsApiRoute = {
 };
 
 export const fetchMessages: IWsApiRoute = {
-  middlware: [randomIdMw, dialogMw],
+  middlware: [authMw, randomIdMw, dialogMw],
   execute: async ({ socket, error, success, data }) => {
     const { id, dialogId } = socket.payload;
     const messages = await DialogMessage.find({ dialogId }).exec();
@@ -33,7 +34,7 @@ export const fetchMessages: IWsApiRoute = {
 };
 
 export const sendMessage: IWsApiRoute = {
-  middlware: [randomIdMw, dialogMw, validateMw({ message: joi.string() })],
+  middlware: [authMw, randomIdMw, dialogMw, validateMw({ message: joi.string() })],
   execute: async ({ socket, error, success, data }) => {
     const { id, dialogId } = socket.payload;
     const messageDoc: IDialogMessage = {
@@ -52,7 +53,7 @@ export const sendMessage: IWsApiRoute = {
 };
 
 export const search: IWsApiRoute = {
-  middlware: [randomIdMw],
+  middlware: [authMw, randomIdMw],
   execute: async ({ socket, error, success, data }) => {
     const { id } = socket.payload;
     const user = await User.findById(id).exec();

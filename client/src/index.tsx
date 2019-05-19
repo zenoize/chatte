@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
+
 import * as serviceWorker from "./serviceWorker";
 
 import { Provider } from "react-redux";
@@ -10,14 +10,14 @@ import "./scss/_custom.scss";
 import { ConnectedRouter } from "connected-react-router";
 
 import { init } from "./store/ws";
-import AppContainer from "./AppContainer";
+import App from "./App";
 
 init(store);
 
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <AppContainer />
+      <App />
     </ConnectedRouter>
   </Provider>,
   document.getElementById("root")

@@ -146,12 +146,19 @@
   dependencies:
     "@types/node" "*"
 
-"@types/socket.io@^2.1.2":
+"@types/socket.io@*", "@types/socket.io@^2.1.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@types/socket.io/-/socket.io-2.1.2.tgz#7165c2587cc3b86b44aa78e2a0060140551de211"
   integrity sha512-Ind+4qMNfQ62llyB4IMs1D8znMEBsMKohZBPqfBUIXqLQ9bdtWIbNTBWwtdcBWJKnokMZGcmWOOKslatni5vtA==
   dependencies:
     "@types/node" "*"
+
+"@types/socketio-jwt@^0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@types/socketio-jwt/-/socketio-jwt-0.0.0.tgz#01f2dc2c8749614b1cf935d72b8fa67ae6fed9d6"
+  integrity sha512-sMKHaC4AFHWJnVJdujWth4NxsJvQ3X5CoI+g7llTuFqDZv0kIjfU2EGri7MP3w90wH7Gz/GylTbeZj2UfcoVbA==
+  dependencies:
+    "@types/socket.io" "*"
 
 abbrev@1:
   version "1.1.1"

@@ -43,15 +43,13 @@ const API: IAPI = {
   get: {
     auth: {
       schema: {
-        login: joi.string().required(),
+        username: joi.string().required(),
         password: joi.string().required()
       },
       access: ApiAccess.GUEST,
-      execute: async ({ login, password }) => {
+      execute: async ({ username, password }) => {
         // return new Promise(async (res, rej) => {
-        const userAccount = await UserAccount.findOne()
-          .or([{ username: login }, { email: login }])
-          .exec();
+        const userAccount = await UserAccount.findOne({ username }).exec();
         if (!userAccount) throw apiError(400, "Неверный логин или пароль");
         const isMatch = await bcrypt.compare(password, userAccount.password);
         if (!isMatch) throw apiError(400, "Неверный логин или пароль");

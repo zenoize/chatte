@@ -2,22 +2,49 @@ import React from "react";
 import ChatContent from "./components/ChatContent";
 import ChatContentContainer from "./components/ChatContentContainer";
 import ChatContainer from "./components/ChatContainer";
+import AuthContainer from "./components/AuthContainer";
+import { Switch, Route, Redirect } from "react-router";
+import { connect } from "react-redux";
+import { history } from "./store/store";
 // import { Switch, Route, Redirect } from "react-router";
 // import { connect } from "react-redux";
 // // import { userAccountCheckToken } from "./store/actions/userActions
 
-
-
-export default class App extends React.Component {
-  
+class App extends React.Component<any> {
   render() {
+    const { account } = this.props;
     return (
       <div className="app">
-        <ChatContainer />
+        <Switch>
+          {/* <ChatContainer /> */}
+          <Route path="/chat" component={this.withToken(ChatContainer)} />
+          <Route path="/auth" component={account.status.auth !== "SUCCESS" ? AuthContainer : ChatContainer} />
+          <Route
+            path="*"
+            component={() => {
+              return <Redirect to="/chat" />;
+            }}
+          />
+          {/* <Route path="/auth" component={AuthContainer} /> */}
+        </Switch>
       </div>
     );
   }
+  withToken(redirect: any) {
+    const { account } = this.props;
+    if (account.status.auth !== "SUCCESS") return () => <Redirect to="/auth" />;
+    // history.push("/auth");
+    return redirect;
+  }
 }
+
+// const redire
+
+const mapStateToProps = (state: any) => ({
+  account: state.chat.account
+});
+
+export default connect(mapStateToProps)(App);
 
 // import querystring from "query-string";
 // import axios from "axios";

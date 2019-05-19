@@ -1,5 +1,6 @@
 import * as socketIO from "socket.io";
 import * as parser from "socket.io-parser";
+import * as colors from "colors";
 
 type SocketError = {
   code: number;
@@ -13,7 +14,7 @@ export const sendError = (socket: socketIO.Socket, error?: SocketError) => {
   socket.emit("api_error", error);
 };
 
-export type ApiSocket = socketIO.Socket & { payload: { id: string; [key: string]: any } };
+export type ApiSocket = socketIO.Socket & { payload: { id: string; token?: string; [key: string]: any } };
 export type WsMiddleware<T = any> = (socket: ApiSocket, method: string, data: T) => Promise<any>;
 export type SocketIOMiddleware = (packet: socketIO.Packet, next: (err?: any) => void) => void;
 
@@ -36,21 +37,32 @@ export interface IWsApiRoute {
 const decoder = new parser.Decoder();
 
 export const createMiddleware: (wsApi: IWsApi, socket: socketIO.Socket) => SocketIOMiddleware = (wsApi, socket) => async packet => {
-  // decoder.
+  const methodName = packet[0];
+  const query = packet[1];
+  const method = wsApi[methodName];
+
+  const logError = (name: string, data: any) => {
+    console.log(`${name}`, `--- ${methodName}\n`, data, "\n");
+  };
+
+  logError(colors.yellow("WS_METHOD"), query);
   try {
-    const methodName = packet[0];
-    const query = packet[1];
-    const method = wsApi[methodName];
     if (!method) throw socketError(405, { msg: "method not defined", method: methodName });
     await Promise.all(method.middlware.map(m => m(socket as ApiSocket, methodName, query)));
     await method.execute({
       data: packet[1],
       socket: socket as any,
       error: (code, msg) => socketError(code, { msg, method: methodName }),
-      success: data => socket.emit(methodName, data)
+      success: data => {
+        logError(colors.green("WS_RESPONSE"), data);
+        // console.log(`${colors.green("WS_RESPONSE")}`, `--- ${methodName}\n`, data, "\n");
+        socket.emit(methodName, data);
+      }
     });
     //     await method.execute(JSON.parse(p.data), socket);
   } catch (err) {
+    logError(colors.red("WS_ERROR"), err);
+    // console.log(`${colors.red("WS_ERROR")}`, `--- ${methodName}\n`, err, "\n");
     sendError(socket, err && err.code ? err : { code: 400 });
   }
   // packet.forEach(async p => {
