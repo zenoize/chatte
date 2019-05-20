@@ -12,17 +12,20 @@ class ButtonGroup extends React.Component<IButtonGroupProps> {
       <div {...this.props} className={this.props.className}>
         {!childs
           ? ""
-          : childs.map((c, i) => {
-              if (!c) return c;
-              const props: any = {
-                key: c.key || `${i}`
-              };
-              if (i === 0) props.style = { ...props.style, borderRadius: "100px 0px 0px 100px" };
-              else if (i === childs.length - 1) props.style = { ...props.style, borderRadius: "0px 100px 100px 0px" };
-              else props.style = { ...props.style, borderRaduls: "0" };
-              return React.cloneElement(c, props);
-              // else return c;
-            })}
+          : childs
+              .filter(c => c)
+              .map((c, i, a) => {
+                if (!c) return c;
+                const props: any = {
+                  key: c.key || `${i}`
+                };
+                if (a.length === 1) props.style = { ...props.style, borderRadius: "100px 100px 100px 100px" };
+                else if (i === 0) props.style = { ...props.style, borderRadius: "100px 0px 0px 100px" };
+                else if (i === childs.length - 1) props.style = { ...props.style, borderRadius: "0px 100px 100px 0px" };
+                else props.style = { ...props.style, borderRaduls: "0" };
+                return React.cloneElement(c, props);
+                // else return c;
+              })}
       </div>
     );
   }

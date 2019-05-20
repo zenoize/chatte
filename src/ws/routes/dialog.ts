@@ -7,10 +7,11 @@ import randomIdMw from "../middleware/randomId";
 import authMw from "../middleware/auth";
 
 import { IWsApiRoute, ApiSocket } from "../middleware/api";
-import DialogMessage, { IDialogMessage } from "../../models/DialogMessage";
+import DialogMessage, { IDialogMessage, DialogMessageType } from "../../models/DialogMessage";
 
 import * as joi from "joi";
 import Bot from "../../bot";
+import UserAccount from "../../models/UserAccount";
 
 export const leave: IWsApiRoute = {
   middlware: [authMw, randomIdMw, dialogMw],
@@ -41,7 +42,15 @@ export const fetchMessages: IWsApiRoute = {
   execute: async ({ socket, error, success, data }) => {
     const { id, dialogId } = socket.payload;
     const messages = await DialogMessage.find({ dialogId }).exec();
-    success({ randomId: data.randomId, messages });
+    // const
+    success({
+      randomId: data.randomId,
+      messages: await Promise.all(
+        messages.map(async m => {
+          return m.userId ? { ...m.toObject(), username: (await UserAccount.findOne({ userId: m.userId }).exec()).username } : m;
+        })
+      )
+    });
     // await User.findOneAndUpdate({ _id: id }, { dialogId: null }).exec();
     // success({ randomId: data.randomId });
   }
@@ -49,19 +58,26 @@ export const fetchMessages: IWsApiRoute = {
 
 export const sendMessage: IWsApiRoute = {
   middlware: [authMw, randomIdMw, dialogMw, validateMw({ message: joi.string(), anonId: joi.number() })],
-  execute: async ({ socket, error, success, data }) => {
+  execute: async ({ socket, error, success, data, state }) => {
     const { id, dialogId, bots } = socket.payload;
+    const { randomId } = data;
+    const { io } = state;
     const senderBot = bots.find((b: Bot) => b.info.user.id === data.anonId) as Bot;
     if (!senderBot) throw error(404, "incorrect anonId");
     // const messages = await DialogMessage.find({ dialogId: user.dialogId }).exec();
 
-    await senderBot.sendMessage(data.message);
+    const dialog = await DialogSession.findById(dialogId).exec();
 
-    const msg = await new DialogMessage({ userId: id as any, dialogId: dialogId as any, message: data.message, time: Date.now(), anonId: data.anonId }).save();
+    if (dialog.status === DialogStatus.DIALOG) await senderBot.sendMessage(data.message, randomId.toString() + "lol");
 
-    success({ randomId: data.randomId, ...msg.toObject() });
+    const msgDoc: IDialogMessage = { userId: id as any, dialogId: dialogId as any, message: data.message, time: Date.now(), anonId: data.anonId, type: DialogMessageType.USER };
+    const msg = await new DialogMessage(msgDoc).save();
+
+    // success({ randomId: data.randomId, ...msg.toObject() });
     // await User.findOneAndUpdate({ _id: id }, { dialogId: null }).exec();
     // success({ randomId: data.randomId });
+
+    io.to("dialog-" + dialogId).emit("dialog.messages.send", { randomId: data.randomId, msg: { ...msg.toObject(), username: socket.payload.username } });
   }
 };
 
@@ -115,32 +131,66 @@ export const sendMessage: IWsApiRoute = {
 
 export const search: IWsApiRoute = {
   middlware: [dialogMw, authMw],
-  execute: async ({ socket, error, success, data }) => {
+  execute: async ({ socket, error, success, data, state }) => {
     const { dialogId, bots } = socket.payload;
+    const { io } = state;
 
     const dialog = await DialogSession.findById(dialogId).exec();
     if (dialog.status !== DialogStatus.STOP) throw error(403, "you already in active dialog");
 
     await dialog.updateOne({ status: DialogStatus.SEARCH });
-    success(dialog);
 
-    for (let b of bots) await b.searchDialog(); //bots.map(b => b.searchDialog()));
-    dialog.updateOne({ status: DialogStatus.DIALOG });
-    socket.emit("dialog.founded");
+    io.to("dialog-" + dialogId).emit("dialog.search", dialog.toObject());
+
+    // success(dialog);
+
+    const search = async () => {
+      await Promise.all(bots.map(b => b.leaveDialog().catch(() => {})));
+      for (let b of bots) {
+        await b.searchDialog().catch(() => {});
+      }
+      if (bots.find(b => !b.info.dialog.id)) await search(); //bots.map(b => b.searchDialog()));
+    };
+    await search();
+    io.to("dialog-" + dialogId).emit("dialog.founded");
+    dialog.updateOne({ status: DialogStatus.DIALOG }).exec();
+    const searchCompleteMsg: IDialogMessage = {
+      dialogId,
+      message: "Дебилы найдены",
+      type: DialogMessageType.SYSTEM,
+      time: Date.now()
+    };
+    new DialogMessage(searchCompleteMsg).save().then(msg => {
+      io.to("dialog-" + dialogId).emit("dialog.messages.new", msg.toObject());
+    });
   }
 };
 
 export const stop: IWsApiRoute = {
   middlware: [dialogMw, authMw],
-  execute: async ({ socket, error, success, data }) => {
+  execute: async ({ socket, error, success, data, state }) => {
+    const { io } = state;
     const { dialogId, bots } = socket.payload;
     const dialog = await DialogSession.findById(dialogId).exec();
     if (dialog.status === DialogStatus.STOP) throw error(403, "dialog already stopped");
 
     await Promise.all([...bots.map(b => b.leaveDialog()), dialog.updateOne({ status: DialogStatus.STOP }).exec()]);
+
+    const systemMsg: IDialogMessage = {
+      dialogId,
+      message: "Дебилы уничтожены.",
+      type: DialogMessageType.SYSTEM,
+      time: Date.now()
+    };
+
+    const msg = await new DialogMessage(systemMsg).save();
+    io.to("dialog-" + dialogId).emit("dialog.messages.new", msg.toObject());
+
     // socket.to("dialog-" + dialogId).emit("dialog.stop");
 
-    success({ ...dialog, status: DialogStatus.STOP });
+    io.to("dialog-" + dialogId).emit("dialog.stop", { ...dialog.toObject(), status: DialogStatus.STOP });
+
+    // success({ ...dialog.toObject(), status: DialogStatus.STOP });
   }
 };
 
@@ -165,14 +215,16 @@ export const create: IWsApiRoute = {
 
     // const bots = await initBots(tokens, dialog.id, socket);
     const ids = bots.map(b => b.info.user.id);
-    await dialog.updateOne({ anonIds: ids }).exec();
+    // await dialog.updateOne({ anonIds: ids }).exec();
 
-    socket.join("dialog-" + dialog.id);
-    await User.findOneAndUpdate({ _id: id }, { dialogId: dialog.id }).exec();
+    // socket.join("dialog-" + dialog.id);
+    await User.findById(id)
+      .update({ dialogId: dialog.id })
+      .exec();
 
     state.bots.set(dialog.id.toString(), { bots });
 
-    success({ dialogId: dialog.id, randomId: data.randomId });
+    success({ dialog: { ...dialog.toObject(), anonIds: ids }, randomId: data.randomId });
   }
 };
 // export  search;

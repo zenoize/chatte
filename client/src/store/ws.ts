@@ -11,10 +11,11 @@ export const init = (store: any) => {
 
   socket
     .on("connect", () => {
-      socket.emit("account.auth", {
-        token: sessionStorage.getItem("auth-token")
-        //"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVjZTAyZDZlNzY3OTQyMjZjNDY1ODQwMCIsImlhdCI6MTU1ODI2NDUwMCwiZXhwIjoxNTU4MzAwNTAwfQ.Zo9s73WIJNdtYrXUKenDrnVFgJ0BIfDOKGkcM-UX820"
-      });
+      if (sessionStorage.getItem("auth-token"))
+        socket.emit("account.auth", {
+          token: sessionStorage.getItem("auth-token")
+          //"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVjZTAyZDZlNzY3OTQyMjZjNDY1ODQwMCIsImlhdCI6MTU1ODI2NDUwMCwiZXhwIjoxNTU4MzAwNTAwfQ.Zo9s73WIJNdtYrXUKenDrnVFgJ0BIfDOKGkcM-UX820"
+        });
       socket.once("account.auth", (data: any) => {
         console.log("auth succeful:", data);
         store.dispatch({ type: "ACCOUNT_AUTH_SUCCESS", payload: data });
@@ -47,6 +48,19 @@ export const init = (store: any) => {
 
   socket.on("dialog.messages.new", (message: any) => {
     dispatch({ type: "DIALOG_MESSAGES_NEW", payload: message });
+  });
+
+  socket.on("dialog.search", (data: any) => {
+    dispatch({ type: "DIALOG_SEARCH_LOADING", payload: data });
+  });
+  let timeout: NodeJS.Timeout;
+  socket.on("dialog.typing", (data: any) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      dispatch({ type: "DIALOG_STOP_TYPING", payload: data });
+      // timeout = null;
+    }, 1000);
+    dispatch({ type: "DIALOG_TYPING", payload: data });
   });
 
   // socket.on("dialog.leave", (data: any) => {

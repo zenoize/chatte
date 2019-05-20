@@ -10,7 +10,8 @@ const Schema = mongoose.Schema;
 const UserAccountSchema = new Schema({
   dialogId: {
     type: Schema.Types.ObjectId,
-    ref: "DialogSession"
+    ref: "DialogSession",
+    required: true
   }
 });
 

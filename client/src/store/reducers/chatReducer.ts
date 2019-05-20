@@ -3,6 +3,12 @@ import { IMessage } from "../../components/ChatContent";
 import { Reducer, IInitialState, createState } from "../store";
 import { DialogStatus } from "../../components/Chat";
 
+export enum DialogMessageType {
+  USER,
+  ANON,
+  SYSTEM
+}
+
 const defaultState = () =>
   createState({
     history: {
@@ -16,7 +22,7 @@ const defaultState = () =>
     },
     dialog: {
       actions: ["create", "search"],
-      entity: {}
+      entity: { typing: [] }
       // actions
     }
     // stat
@@ -38,6 +44,29 @@ export default (s = initialState, action: any) => {
         .entity("account", ".", action.payload.user)
         .entity("dialog", ".", action.payload.dialog || {}).state;
 
+    case "DIALOG_STOP_TYPING":
+      return new Reducer(s).custom(s => ({
+        ...s,
+        dialog: {
+          ...s.dialog,
+          entity: {
+            ...s.dialog.entity,
+            typing: s.dialog.entity.typing.filter((anonId: any) => anonId !== action.payload.anonId)
+          }
+        }
+      })).state;
+    case "DIALOG_TYPING":
+      return new Reducer(s).custom(s => ({
+        ...s,
+        dialog: {
+          ...s.dialog,
+          entity: {
+            ...s.dialog.entity,
+            typing: s.dialog.entity.typing.includes(action.payload.anonId) ? s.dialog.entity.typing : [...s.dialog.entity.typing, action.payload.anonId]
+          }
+        }
+      })).state;
+
     case "DIALOG_SEARCH_LOADING":
       return new Reducer(s).status("dialog", "search", "LOADING").entity("dialog", "status", DialogStatus.SEARCH).state;
     case "DIALOG_SEARCH_ERROR":
@@ -45,15 +74,21 @@ export default (s = initialState, action: any) => {
     case "DIALOG_SEARCH_SUCCESS":
       return new Reducer(s).status("dialog", "search", "SUCCESS").entity("dialog", "status", DialogStatus.DIALOG).state;
 
+    case "DIALOG_STOP_LOADING":
+      return new Reducer(s).status("dialog", "stop", "LOADING").entity("dialog", "status", DialogStatus.STOP).state;
+    // .entity("dialog", "typing", []).state;
     case "DIALOG_STOP_SUCCESS":
-      return new Reducer(s).status("dialog", "stop", "SUCCESS").entity("dialog", "status", DialogStatus.STOP).state;
+      return new Reducer(s)
+        .status("dialog", "stop", "SUCCESS")
+        .entity("dialog", "status", DialogStatus.STOP)
+        .entity("dialog", "typing", []).state;
 
     case "DIALOG_CREATE_LOADING":
       return new Reducer(s).status("dialog", "create", "LOADING").state;
     case "DIALOG_CREATE_ERROR":
       return new Reducer(s).status("dialog", "create", "ERROR").error("dialog", "create", action.payload).state;
     case "DIALOG_CREATE_SUCCESS":
-      return new Reducer(s).status("dialog", "create", "SUCCESS").entity("dialog", "status", action.payload.dialogId).state;
+      return new Reducer(s).status("dialog", "create", "SUCCESS").entity("dialog", ".", action.payload).state;
 
     case "DIALOG_MESSAGES_FETCH_SUCCESS":
       return new Reducer(s).status("history", "fetch", "SUCCESS").entity("history", "messages", action.payload).state;
@@ -61,8 +96,22 @@ export default (s = initialState, action: any) => {
       return new Reducer(s).status("history", "fetch", "LOADING").state;
 
     case "DIALOG_MESSAGES_SEND_LOADING":
-      return new Reducer(s).status("history", "send", "LOADING").state;
-    case "DIALOG_MESSAGES_SEND_SUCCESS":
+      return new Reducer(s).custom(s => {
+        return {
+          ...s,
+          history: {
+            ...s.history,
+            entity: {
+              ...s.history.entity,
+              messages: [...s.history.entity.messages, { ...action.payload, loading: true }]
+            }
+          }
+        };
+      }).state;
+
+    case "DIALOG_MESSAGES_SEND_SUCCESS": {
+      const msg = s.history.entity.messages.find((msg: any) => msg.randomId === action.payload.randomId);
+
       return new Reducer(s).status("history", "send", "SUCCESS").custom(s => {
         return {
           ...s,
@@ -70,12 +119,14 @@ export default (s = initialState, action: any) => {
             ...s.history,
             entity: {
               ...s.history.entity,
-              messages: [...s.history.entity.messages, { ...action.payload, type: "USER" }]
+              messages: msg
+                ? s.history.entity.messages.map((m: any) => (m.randomId === action.payload.randomId ? { ...m, ...action.payload.msg, time: m.time, loading: false } : m))
+                : [...s.history.entity.messages, action.payload]
             }
           }
         };
       }).state;
-
+    }
     case "DIALOG_MESSAGES_NEW":
       return new Reducer(s).status("history", "send", "SUCCESS").custom(s => {
         return {
@@ -84,7 +135,7 @@ export default (s = initialState, action: any) => {
             ...s.history,
             entity: {
               ...s.history.entity,
-              messages: [...s.history.entity.messages, { ...action.payload, type: "USER" }]
+              messages: [...s.history.entity.messages, { ...action.payload }]
             }
           }
         };

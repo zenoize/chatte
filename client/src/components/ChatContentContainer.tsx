@@ -5,15 +5,18 @@ import { fetchMessages } from "../store/actions/chatActions";
 
 class ChatContentContainer extends React.Component<any> {
   componentDidUpdate(prev: any) {
-    const prevHistoryStatus = prev.history.status.fetch;
     const historyStatus = this.props.history.status.fetch;
-    const prevAccountStatus = prev.account.status.auth;
     const accountStatus = this.props.account.status.auth;
-    if (accountStatus === "SUCCESS" && prevAccountStatus !== "SUCCESS" && historyStatus !== "SUCCESS") this.props.fetchMessages();
+    if (accountStatus === "SUCCESS" && historyStatus !== "SUCCESS" && historyStatus !== "LOADING") this.props.fetchMessages();
+  }
+  componentDidMount() {
+    const historyStatus = this.props.history.status.fetch;
+    const accountStatus = this.props.account.status.auth;
+    if (accountStatus === "SUCCESS" && historyStatus !== "SUCCESS" && historyStatus !== "LOADING") this.props.fetchMessages();
   }
   render() {
     const { history, dialog } = this.props;
-    return <ChatContent users={dialog.anonIds || []} messages={history.entity.messages} loading={history.status.fetch !== "SUCCESS"} />;
+    return <ChatContent typing={dialog.entity.typing} anonIds={dialog.entity.anonIds || []} messages={history.entity.messages} loading={history.status.fetch !== "SUCCESS"} />;
   }
 }
 

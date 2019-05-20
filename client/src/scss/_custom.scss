@@ -127,6 +127,28 @@ body {
   // }
 }
 
+.bump-enter {
+  // transform: scale(0.8) translateX(0.5);
+  opacity: 0;
+}
+
+.bump-enter-active {
+  // transform: scale(1);
+  opacity: 1;
+  transition: all 0.2s ease;
+}
+
+.bump-exit {
+  // transform: scale(0.8) translateX(0.5);
+  opacity: 1;
+}
+
+.bump-exit-active {
+  // transform: scale(1);
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
 .fade-exit-active {
   // @extend .invisible;
   transition: transform 0.3s ease, background-color 0.1s;
@@ -137,6 +159,34 @@ body {
     transition: color 0.3s ease;
   }
 }
+
+// .shrink-enter {
+//   // background-color: transparent;
+//   transform: scaleX(0.4);
+//   // transition: all 1s ease  !important;
+// }
+
+// .shrink-enter-active {
+//   transform: scaleX(1.1);
+//   transition: all 1s ease  !important;
+//   // background-color: white;
+// }
+
+// .shrink-exit-done {
+//   transform: scale(1);
+//   // transition: all 1s ease !important;
+// }
+
+// .shrink-exit {
+//   transform: scale(1);
+//   transition: all 1s ease  !important;
+// }
+
+// .shrink-exit-active {
+//   transform: scale(0.4);
+//   transition: all 1s ease  !important;
+//   // background-color: transparent;
+// }
 
 @import "~bootstrap/scss/bootstrap.scss";
 @import "./app.scss";

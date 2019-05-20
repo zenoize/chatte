@@ -2,10 +2,18 @@
 
 import axios from "axios";
 import { IMessage } from "../../components/ChatContent";
+import { DialogMessageType } from "../reducers/chatReducer";
 
-export const sendMessage = (message: string) => (dispatch: any, getState: any, emit: any) => {
-  dispatch({ type: "DIALOG_MESSAGES_SEND_LOADING" });
-  emit("dialog.messages.send", { randomId: Math.random(), message });
+export const sendMessage = (message: string, anonId: number) => (dispatch: any, getState: any, emit: any) => {
+  const msg: IMessage = {
+    anonId,
+    message,
+    time: Date.now(),
+    type: DialogMessageType.USER
+  };
+  const randomId = Date.now();
+  dispatch({ type: "DIALOG_MESSAGES_SEND_LOADING", payload: { ...msg, randomId } });
+  emit("dialog.messages.send", { ...msg, randomId });
 };
 
 export const setToken = (token: string) => {
@@ -13,14 +21,17 @@ export const setToken = (token: string) => {
   return { type: "ACCOUNT_AUTH_SUCCESS", payload: token };
 };
 
-export const logIn = (username: string, password: string) => async (dispatch: any) => {
+export const logIn = (username: string, password: string) => async (dispatch: any, getState: any, emit: any) => {
   try {
     dispatch({ type: "ACCOUNT_AUTH_LOADING" });
     const res = await axios.get("/api/account/auth", { params: { username, password } });
     sessionStorage.setItem("auth-token", res.data.token);
-    dispatch({ type: "ACCOUNT_AUTH_SUCCESS", payload: res.data });
+    emit("account.auth", {
+      token: res.data.token
+    });
+    // dispatch({ type: "ACCOUNT_AUTH_SUCCESS", payload: res.data });
   } catch (err) {
-    dispatch({ type: "ACCOUNT_AUTH_ERROR" });
+    dispatch({ type: "ACCOUNT_AUTH_ERROR", payload: { status: err.response.status, ...err.response.data } });
     console.log("action error:", err);
   }
 };

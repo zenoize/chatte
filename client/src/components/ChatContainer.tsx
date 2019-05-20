@@ -21,6 +21,7 @@ class ChatContainer extends React.Component<any> {
     return (
       // <div className="h-100">
       <Chat
+        anonIds={chat.dialog.entity.anonIds}
         dialogStatus={chat.dialog.entity.status}
         sendMessage={this.props.sendMessage}
         searchDialog={this.props.searchDialog}

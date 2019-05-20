@@ -6,7 +6,7 @@ import { create, leave, fetchMessages, sendMessage, search, stop } from "./ws/ro
 import { auth } from "./ws/routes/account";
 import Bot from "./bot";
 import User from "./models/User";
-import DialogMessage, { IDialogMessage } from "./models/DialogMessage";
+import DialogMessage, { IDialogMessage, DialogMessageType } from "./models/DialogMessage";
 import DialogSession, { DialogStatus } from "./models/DialogSession";
 
 // import dialog from "./middleware/ws/dialog";
@@ -23,6 +23,7 @@ const api: IWsApi = {
 
 export default async function ws(io: socketIO.Server) {
   const state = {
+    io: io,
     bots: new Map<string, { bots: Bot[] }>(),
     bindBot: async (token: string[], dialogId: string) => {
       const bots = await Promise.all(
@@ -39,27 +40,59 @@ export default async function ws(io: socketIO.Server) {
 
       if (bots.find(b => !b.info.dialog.id)) {
         await Promise.all(bots.map(b => b.leaveDialog()));
-        await DialogSession.findByIdAndUpdate(dialogId, { status: DialogStatus.STOP }).exec();
+        await DialogSession.findById(dialogId)
+          .update({ status: DialogStatus.STOP })
+          .exec();
         io.to("dialog-" + dialogId).emit("dialog.stop");
       }
 
+      // let dialog = false;
+
       bots.forEach(async (b, i) => {
+        const pair = bots.find(bot => bot !== b);
         await b.leaveDialog().catch(() => {});
+        b.chat.on("dialog.typing", e => {
+          io.to("dialog-" + dialogId).emit("dialog.typing", { anonId: b.info.user.id });
+          pair.setTyping(e.data.typing);
+        });
         b.chat.on("messages.new", async e => {
           if (e.data.senderId !== b.info.user.id) {
-            const msg = await bots.find(bot => b !== bot).sendMessage(e.data.message);
+            const msg = await pair.sendMessage(e.data.message);
           } else {
-            io.to("dialog-" + dialogId).emit(
-              "dialog.messages.new",
-              await DialogMessage.create({ time: Date.now(), anonId: e.data.senderId, dialogId, message: e.data.message } as IDialogMessage)
-            );
+            if (!e.data.randomId.endsWith("lol"))
+              io.to("dialog-" + dialogId).emit(
+                "dialog.messages.new",
+                await DialogMessage.create({
+                  time: Date.now(),
+                  anonId: e.data.senderId,
+                  // user
+                  dialogId,
+                  message: e.data.message,
+                  type: DialogMessageType.ANON
+                } as IDialogMessage)
+              );
           }
         });
         // b.chat.on("dialog.opened", () => {});
         b.chat.on("dialog.closed", async e => {
-          await DialogSession.findByIdAndUpdate(dialogId, { status: DialogStatus.STOP });
-          await Promise.all(bots.map(b => b.leaveDialog()));
+          await DialogSession.findById(dialogId)
+            .update({ status: DialogStatus.STOP })
+            .exec();
+          await Promise.all(bots.map(b => b.leaveDialog().catch(() => {})));
+          const msg: IDialogMessage = {
+            anonId: b.info.user.id,
+            dialogId,
+            message: "Дебилы самоуничтожились.",
+            type: DialogMessageType.SYSTEM,
+            time: Date.now()
+          };
+          if (pair.info.dialog.id) io.to("dialog-" + dialogId).emit("dialog.messages.new", (await new DialogMessage(msg).save()).toObject());
           io.to("dialog-" + dialogId).emit("dialog.stop");
+          // socket.leave("dialog-" + dialogId);
+          // io.sockets.clients((err, clients) => {
+          //   if (err) throw err;
+          //   clients.forEach(c => io.sockets.sockets[c].leave("dialog-" + dialogId));
+          // });
         });
       });
       return bots;

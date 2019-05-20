@@ -17,8 +17,28 @@ class App extends React.Component<any> {
       <div className="app">
         <Switch>
           {/* <ChatContainer /> */}
-          <Route path="/chat" component={this.withToken(ChatContainer)} />
-          <Route path="/auth" component={account.status.auth !== "SUCCESS" ? AuthContainer : ChatContainer} />
+          <Route
+            path="/chat"
+            component={() => {
+              // this.withToken(ChatContainer);
+              // const { account } = this.props;
+              if (account.status.auth !== "SUCCESS") {
+                history.push("/auth");
+                return <div />;
+              } else return <ChatContainer />;
+            }}
+          />
+          <Route
+            path="/auth"
+            component={
+              account.status.auth !== "SUCCESS"
+                ? AuthContainer
+                : () => {
+                    history.push("/chat");
+                    return <div />;
+                  }
+            }
+          />
           <Route
             path="*"
             component={() => {
@@ -37,6 +57,8 @@ class App extends React.Component<any> {
     return redirect;
   }
 }
+
+// const redirectIf = () => <Redi
 
 // const redire
 

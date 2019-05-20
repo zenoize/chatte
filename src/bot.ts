@@ -22,35 +22,26 @@ export default class Bot {
     this.socket.on("notice", data => {
       // HTMLFormControlsCollection
       this.chat.emit(data.notice, data);
+      // if()
       switch (data.notice) {
         case "error.code":
           return console.log("ERROR!".red, data.data);
         default:
-          return console.log("notice:", data.notice);
+          return console.log(this.info.user.id, " --- notice --- ", data.notice, " --- data --- \n", data.data, "\n");
       }
     });
   }
 
   handleNotice(filter?: (data: any) => boolean, error?: (data: any) => boolean): Promise<any> {
     return new Promise((res, rej) => {
-      let resolved = false;
-      const err = () =>
-        this.socket.once("error.code", data => {
-          if (resolved) return;
-          if (error(data)) {
-            resolved = true;
-            rej(data);
-          } else err();
-        });
       const notice = () =>
         this.socket.once("notice", async data => {
-          if (resolved) return;
+          if (error && data.notice === "error.code" && error(data.data)) return rej(data);
           if (filter(data)) {
-            resolved = true;
             res(data);
           } else notice();
         });
-      err();
+
       notice();
     });
   }
@@ -94,7 +85,7 @@ export default class Bot {
     // this.socket.emit("action", data);
   }
 
-  async sendMessage(messageText) {
+  async sendMessage(messageText: string, randomId: string = Date.now().toString()) {
     // return new Promise((res, rej) => {
     const { id: dialogId } = this.info.dialog;
     const { id: userId } = this.info.user;
@@ -102,10 +93,10 @@ export default class Bot {
       action: "anon.message",
       dialogId: dialogId,
       message: messageText,
-      randomId: `${userId}_${new Date().getTime()}-fresh_memes`
+      randomId
     };
     this.socket.emit("action", message);
-    return await this.handleNotice(data => data.notice === "messages.new" && data.senderId === userId);
+    return await this.handleNotice(data => data.notice === "messages.new" && data.data.senderId === userId);
 
     // });
   }
@@ -123,7 +114,12 @@ export default class Bot {
       dialogId
     };
     this.socket.emit("action", query);
-    const data = await this.handleNotice(e => e.notice === "dialog.closed");
+    const data = await this.handleNotice(
+      e => e.notice === "dialog.closed",
+      e => {
+        return e.id === 205;
+      }
+    );
     this.info.dialog = {};
   }
 }

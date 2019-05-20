@@ -82,7 +82,16 @@ export class Reducer {
   }
   error(entity: string, action: string, error: any) {
     const { _state: s } = this;
-    this._state = { ...s, [entity]: { ...s.entity, error: { ...s[entity].error, [action]: error } } };
+    this._state = {
+      ...s,
+      [entity]: {
+        ...s[entity],
+        error: {
+          ...s[entity].error,
+          [action]: error
+        }
+      }
+    };
     return this;
   }
   entity(entity: string, path: string, data: any) {

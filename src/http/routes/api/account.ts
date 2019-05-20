@@ -8,6 +8,7 @@ import auth from "../../middleware/auth";
 
 import * as joi from "joi";
 import User, { IUser } from "../../../models/User";
+import DialogSession from "../../../models/DialogSession";
 
 const router = Router();
 
@@ -115,8 +116,9 @@ const API: IAPI = {
       execute: async ({ username, password }, { req, res, reflect }) => {
         const existingUser = await UserAccount.findOne().or([{ username }, { password }]);
         if (existingUser) throw apiError(403, "user already exist");
-        const userDoc: IUser = {};
-        const user = await User.create({ userDoc });
+        const dialog = DialogSession.findOne().exec();
+        const userDoc: IUser = { dialogId: (await dialog).id };
+        const user = await User.create(userDoc);
         const userAccountDoc: IUserAccount = {
           password: await genHash(password),
           username,

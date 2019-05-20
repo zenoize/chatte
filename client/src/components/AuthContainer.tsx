@@ -13,8 +13,8 @@ class AuthContainer extends React.Component<any> {
   //   this.props.fetchMessages();
   // }
 
-  logIn = () => {
-    this.props.logIn("test", "test");
+  logIn = (username: string, password: string) => {
+    this.props.logIn(username, password);
     // this.setState({ loading: true });
     // setTimeout(() => {
     //   this.setState({ loading: false });
@@ -24,7 +24,7 @@ class AuthContainer extends React.Component<any> {
   render() {
     const { account } = this.props;
     // const { loading } = this.state;
-    return <Auth loading={account.status.auth === "LOADING"} logIn={this.logIn} />;
+    return <Auth status={account.status.auth} error={account.error.auth} logIn={this.logIn} />;
     // <div className="h-100">
     // <Chat sendMessage={this.props.sendMessage} searchDialog={this.props.searchDialog} leaveDialog={this.props.leaveDialog} />
     // </div>
