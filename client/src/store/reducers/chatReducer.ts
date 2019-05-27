@@ -91,7 +91,7 @@ export default (s = initialState, action: any) => {
       return new Reducer(s).status("dialog", "create", "SUCCESS").entity("dialog", ".", action.payload).state;
 
     case "DIALOG_MESSAGES_FETCH_SUCCESS":
-      return new Reducer(s).status("history", "fetch", "SUCCESS").entity("history", "messages", action.payload).state;
+      return new Reducer(s).status("history", "fetch", "SUCCESS").entity("history", "messages", action.payload.slice(0, 200)).state;
     case "DIALOG_MESSAGES_FETCH_LOADING":
       return new Reducer(s).status("history", "fetch", "LOADING").state;
 
@@ -122,7 +122,7 @@ export default (s = initialState, action: any) => {
               ...s.history.entity,
               messages: msg
                 ? s.history.entity.messages.map((m: any) => (m.randomId === action.payload.randomId ? { ...m, ...action.payload.msg, time: m.time, loading: false } : m))
-                : [...s.history.entity.messages, action.payload.msg]
+                : [...s.history.entity.messages, action.payload.msg].slice(0, 200)
             }
           }
         };
@@ -137,7 +137,7 @@ export default (s = initialState, action: any) => {
             ...s.history,
             entity: {
               ...s.history.entity,
-              messages: [...s.history.entity.messages, { ...action.payload }]
+              messages: [...s.history.entity.messages, { ...action.payload }].slice(0, 200)
             }
           }
         };

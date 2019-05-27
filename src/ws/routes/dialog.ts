@@ -41,7 +41,10 @@ export const fetchMessages: IWsApiRoute = {
   middlware: [authMw, randomIdMw, dialogMw],
   execute: async ({ socket, error, success, data }) => {
     const { id, dialogId } = socket.payload;
-    const messages = await DialogMessage.find({ dialogId }).exec();
+    const messages = await DialogMessage.find({ dialogId })
+      .sort({ time: -1 })
+      .limit(200)
+      .exec();
     // const
     success({
       randomId: data.randomId,
@@ -196,8 +199,6 @@ export const stop: IWsApiRoute = {
     // socket.to("dialog-" + dialogId).emit("dialog.stop");
 
     io.to("dialog-" + dialogId).emit("dialog.stop", { ...dialog.toObject(), status: DialogStatus.STOP });
-
-    
 
     // success({ ...dialog.toObject(), status: DialogStatus.STOP });
   }
