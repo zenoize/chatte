@@ -29,7 +29,8 @@ export default class ChatContent extends React.Component<IChatContentProps> {
       const { scrollHeight, scrollTop } = this.scroll.current.getValues();
 
       // const height = this.scroll.current.getScrollTop();
-      if (scrollHeight - scrollTop <= 1000) this.scroll.current.scrollToBottom();
+      console.log(scrollHeight - scrollTop);
+      if (scrollHeight - scrollTop <= 855) this.scroll.current.scrollToBottom();
     }
     if (prev.loading && !this.props.loading) this.scroll.current.scrollToBottom();
   }

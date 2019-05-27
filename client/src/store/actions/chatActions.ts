@@ -50,7 +50,7 @@ export const createDialog = () => (dispatch: any, getState: any, emit: any) => {
   emit("dialog.create", { randomId: Math.random() });
 };
 
-export const leaveDialog = () => (dispatch: any, getState: any, emit: any) => {
+export const stopDialog = () => (dispatch: any, getState: any, emit: any) => {
   dispatch({ type: "DIALOG_STOP_LOADING" });
   emit("dialog.stop", { randomId: Math.random() });
 };

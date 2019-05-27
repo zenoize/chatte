@@ -1,6 +1,11 @@
 .app {
+  @extend .container-fluid;
   height: 100vh;
-  display: flex;
-  justify-content: center;
+  // display: flex;
+  // justify-content: center;
   // align-items: center;
+}
+
+.fill-primary {
+  fill: $primary;
 }

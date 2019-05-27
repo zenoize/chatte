@@ -26,8 +26,8 @@ export default class Bot {
       switch (data.notice) {
         case "error.code":
           return console.log("ERROR!".red, data.data);
-        default:
-          return console.log(this.info.user.id, " --- notice --- ", data.notice, " --- data --- \n", data.data, "\n");
+        // default:
+        // return console.log(this.info.user.id, " --- notice --- ", data.notice, " --- data --- \n", data.data, "\n");
       }
     });
   }
@@ -105,6 +105,10 @@ export default class Bot {
     this.socket.emit("action", userInfo);
     const dialog = await this.handleNotice(data => data.notice === "dialog.opened");
     this.info.dialog = dialog.data;
+  }
+  async stopSearch() {
+    this.socket.emit("action", { action: "search.sendOut" });
+    await this.handleNotice(data => data.notice === "search.out");
   }
   async leaveDialog() {
     const { id: dialogId } = this.info.dialog;

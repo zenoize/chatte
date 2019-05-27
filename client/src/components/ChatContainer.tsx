@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import ChatContent from "./ChatContent";
-import { fetchMessages, sendMessage, searchDialog, leaveDialog, createDialog } from "../store/actions/chatActions";
+import { fetchMessages, sendMessage, searchDialog, stopDialog, createDialog } from "../store/actions/chatActions";
 import Chat from "./Chat";
 import { Input } from "reactstrap";
 
@@ -20,14 +20,17 @@ class ChatContainer extends React.Component<any> {
     const { chat } = this.props;
     return (
       // <div className="h-100">
-      <Chat
-        anonIds={chat.dialog.entity.anonIds}
-        dialogStatus={chat.dialog.entity.status}
-        sendMessage={this.props.sendMessage}
-        searchDialog={this.props.searchDialog}
-        createDialog={this.props.createDialog}
-        leaveDialog={this.props.leaveDialog}
-      />
+      // <div className="position-relative flex-g">
+        <Chat
+          // className=
+          anonIds={chat.dialog.entity.anonIds}
+          dialogStatus={chat.dialog.entity.status}
+          sendMessage={this.props.sendMessage}
+          searchDialog={this.props.searchDialog}
+          createDialog={this.props.createDialog}
+          stopDialog={this.props.leaveDialog}
+        />
+        
       // </div>
     );
   }
@@ -36,7 +39,7 @@ class ChatContainer extends React.Component<any> {
 const mapDispatchToProps = {
   sendMessage,
   searchDialog,
-  leaveDialog,
+  leaveDialog: stopDialog,
   fetchMessages,
   createDialog
 };

@@ -6,48 +6,69 @@ import AuthContainer from "./components/AuthContainer";
 import { Switch, Route, Redirect } from "react-router";
 import { connect } from "react-redux";
 import { history } from "./store/store";
+import ChatInfoBarContainer from "./components/ChatInfoBarContainer";
 // import { Switch, Route, Redirect } from "react-router";
 // import { connect } from "react-redux";
 // // import { userAccountCheckToken } from "./store/actions/userActions
 
 class App extends React.Component<any> {
+  renderChatPage = () => {
+    return (
+      <div className="app">
+        {/* <div className="d-flex"> */}
+        <div className="row h-100 py-md-5">
+          <ChatInfoBarContainer />
+          <ChatContainer />
+        </div>
+
+        {/* </div> */}
+      </div>
+    );
+  };
+
+  renderAuthPage = () => {
+    return (
+      <div className="app">
+        <AuthContainer />
+      </div>
+    );
+  };
+
   render() {
     const { account } = this.props;
     return (
-      <div className="app">
-        <Switch>
-          {/* <ChatContainer /> */}
-          <Route
-            path="/chat"
-            component={() => {
-              // this.withToken(ChatContainer);
-              // const { account } = this.props;
-              if (account.status.auth !== "SUCCESS") {
-                history.push("/auth");
-                return <div />;
-              } else return <ChatContainer />;
-            }}
-          />
-          <Route
-            path="/auth"
-            component={
-              account.status.auth !== "SUCCESS"
-                ? AuthContainer
-                : () => {
-                    history.push("/chat");
-                    return <div />;
-                  }
-            }
-          />
-          <Route
-            path="*"
-            component={() => {
-              return <Redirect to="/chat" />;
-            }}
-          />
-          {/* <Route path="/auth" component={AuthContainer} /> */}
-        </Switch>
-      </div>
+      <Switch>
+        {/* <ChatContainer /> */}
+        <Route
+          path="/chat"
+          component={() => {
+            // this.withToken(ChatContainer);
+            // const { account } = this.props;
+            if (account.status.auth !== "SUCCESS") {
+              history.push("/auth");
+              return <div />;
+            } else return this.renderChatPage();
+          }}
+        />
+        <Route
+          path="/auth"
+          component={
+            account.status.auth !== "SUCCESS"
+              ? this.renderAuthPage
+              : () => {
+                  history.push("/chat");
+                  return <div />;
+                }
+          }
+        />
+        <Route
+          path="*"
+          component={() => {
+            return <Redirect to="/chat" />;
+          }}
+        />
+        {/* <Route path="/auth" component={AuthContainer} /> */}
+      </Switch>
     );
   }
   withToken(redirect: any) {

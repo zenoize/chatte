@@ -5,10 +5,11 @@ import { fetchMessages, sendMessage, searchDialog, stopDialog, logIn } from "../
 import Chat from "./Chat";
 import { Input } from "reactstrap";
 import Auth from "./Auth";
+import ChatInfoBar from "./ChatInfoBar";
 
 // const messages = []
 
-class AuthContainer extends React.Component<any> {
+class ChatInfoBarContainer extends React.Component<any> {
   // componentDidMount() {
   //   this.props.fetchMessages();
   // }
@@ -23,11 +24,7 @@ class AuthContainer extends React.Component<any> {
 
   render() {
     const { account } = this.props;
-    // const { loading } = this.state;
-    return <Auth status={account.status.auth} error={account.error.auth} logIn={this.logIn} />;
-    // <div className="h-100">
-    // <Chat sendMessage={this.props.sendMessage} searchDialog={this.props.searchDialog} leaveDialog={this.props.leaveDialog} />
-    // </div>
+    return <ChatInfoBar />;
   }
 }
 
@@ -45,4 +42,4 @@ const mapStateToProps = (state: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(AuthContainer);
+)(ChatInfoBarContainer);

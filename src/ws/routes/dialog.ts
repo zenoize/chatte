@@ -174,21 +174,30 @@ export const stop: IWsApiRoute = {
     const dialog = await DialogSession.findById(dialogId).exec();
     if (dialog.status === DialogStatus.STOP) throw error(403, "dialog already stopped");
 
-    await Promise.all([...bots.map(b => b.leaveDialog()), dialog.updateOne({ status: DialogStatus.STOP }).exec()]);
+    // io.to
 
-    const systemMsg: IDialogMessage = {
-      dialogId,
-      message: "Дебилы уничтожены.",
-      type: DialogMessageType.SYSTEM,
-      time: Date.now()
-    };
+    await Promise.all([
+      ...(dialog.status === DialogStatus.DIALOG ? bots.map(b => b.leaveDialog()) : bots.map(b => Promise.all([b.stopSearch(), b.leaveDialog()]))),
+      dialog.updateOne({ status: DialogStatus.STOP }).exec()
+    ]);
 
-    const msg = await new DialogMessage(systemMsg).save();
-    io.to("dialog-" + dialogId).emit("dialog.messages.new", msg.toObject());
+    if (dialog.status === DialogStatus.DIALOG) {
+      const systemMsg: IDialogMessage = {
+        dialogId,
+        message: "Дебилы уничтожены.",
+        type: DialogMessageType.SYSTEM,
+        time: Date.now()
+      };
+
+      const msg = await new DialogMessage(systemMsg).save();
+      io.to("dialog-" + dialogId).emit("dialog.messages.new", msg.toObject());
+    }
 
     // socket.to("dialog-" + dialogId).emit("dialog.stop");
 
     io.to("dialog-" + dialogId).emit("dialog.stop", { ...dialog.toObject(), status: DialogStatus.STOP });
+
+    
 
     // success({ ...dialog.toObject(), status: DialogStatus.STOP });
   }

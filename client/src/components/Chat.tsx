@@ -15,12 +15,13 @@ export enum DialogStatus {
 }
 
 export interface IChatProps {
+  className?: string;
   loading?: boolean;
   dialogStatus?: DialogStatus;
   anonIds: number[];
   sendMessage: (text: string, anonId: number) => void;
   searchDialog: () => void;
-  leaveDialog: () => void;
+  stopDialog: () => void;
   createDialog: () => void;
 }
 
@@ -61,33 +62,40 @@ export default class Chat extends React.Component<IChatProps> {
       loading ? (
         <Spinner />
       ) : (
-        <div className="chat">
+        <div className={"chat " + (this.props.className || "")}>
           <div className="chat-header">
-            <Button size="sm" color="primary" className="rounded-pill p-1 my-auto">
+            <Button size="sm" color="white" className="rounded-pill text-primary p-1 my-auto">
               <Settings />
             </Button>
-            <Button
-              size="sm"
-              disabled={dialogStatus === DialogStatus.SEARCH}
-              color={dialogStatus === DialogStatus.DIALOG ? "danger" : "primary"}
-              className="rounded-pill ml-auto  my-1"
-              onClick={dialogStatus === DialogStatus.DIALOG ? this.props.leaveDialog : this.props.searchDialog}
-            >
-              {(() => {
-                switch (dialogStatus) {
-                  case DialogStatus.SEARCH:
-                    return (
-                      <span>
-                        Ищем.. <Spinner size="sm" />
-                      </span>
-                    );
-                  case DialogStatus.DIALOG:
-                    return "Отключиться";
-                  case DialogStatus.STOP:
-                    return "Новый";
-                }
-              })()}
-            </Button>
+            <ButtonGroup className="ml-auto" radius="5px">
+              {dialogStatus === DialogStatus.SEARCH ? (
+                <Button size="sm" color={"danger"} className=" ml-auto my-1" onClick={this.props.stopDialog}>
+                  Остановить
+                </Button>
+              ) : null}
+              <Button
+                size="sm"
+                disabled={dialogStatus === DialogStatus.SEARCH}
+                color={dialogStatus === DialogStatus.DIALOG ? "danger" : "primary"}
+                className="ml-auto my-1"
+                onClick={dialogStatus === DialogStatus.DIALOG ? this.props.stopDialog : this.props.searchDialog}
+              >
+                {(() => {
+                  switch (dialogStatus) {
+                    case DialogStatus.SEARCH:
+                      return (
+                        <span>
+                          Ищем.. <Spinner size="sm" />
+                        </span>
+                      );
+                    case DialogStatus.DIALOG:
+                      return "Отключиться";
+                    case DialogStatus.STOP:
+                      return "Новый";
+                  }
+                })()}
+              </Button>
+            </ButtonGroup>
             {/* <ButtonGroup className="ml-auto p-1">
               {dialogStatus &&
                 (dialogStatus === DialogStatus.DIALOG && (

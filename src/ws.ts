@@ -88,6 +88,10 @@ export default async function ws(io: socketIO.Server) {
           };
           if (pair.info.dialog.id) io.to("dialog-" + dialogId).emit("dialog.messages.new", (await new DialogMessage(msg).save()).toObject());
           io.to("dialog-" + dialogId).emit("dialog.stop");
+          // setTimeout(() => {
+          //   if (bots.find(b => b.info.dialog.id)) return;
+          //   io.emit("dialog.search");
+          // }, 5000);
           // socket.leave("dialog-" + dialogId);
           // io.sockets.clients((err, clients) => {
           //   if (err) throw err;
@@ -99,23 +103,22 @@ export default async function ws(io: socketIO.Server) {
     }
   };
 
-  const users = await User.find()
-    .ne("dialogId", null)
-    .populate("dialogId")
-    .exec();
+  const dialogs = await DialogSession.find().exec();
 
-  const botUsers = await Promise.all(
-    users.map(async (u: any, i) => {
+  const dialogBots = await Promise.all(
+    dialogs.map(async (d: any, i) => {
       return [
-        u.dialogId._id.toString(),
+        d._id.toString(),
         {
-          bots: await state.bindBot(u.dialogId.anonTokens, u.dialogId._id.toString())
+          bots: await state.bindBot(d.anonTokens, d._id.toString())
         }
       ];
     })
   );
 
-  state.bots = new Map(botUsers as any);
+  // io.em
+
+  state.bots = new Map(dialogBots as any);
 
   io.on("connection", async (socket: ApiSocket) => {
     const apiMiddlware = createMiddleware(api, socket, state);

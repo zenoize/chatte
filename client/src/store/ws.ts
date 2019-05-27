@@ -36,6 +36,9 @@ export const init = (store: any) => {
 
   socket.on("dialog.stop", (data: any) => {
     dispatch({ type: "DIALOG_STOP_SUCCESS", payload: data });
+    // setTimeout(() => {
+    //   socket.emit("dialog.search");
+    // }, 2000);
   });
 
   socket.on("dialog.create", (data: any) => {
@@ -59,7 +62,7 @@ export const init = (store: any) => {
     timeout = setTimeout(() => {
       dispatch({ type: "DIALOG_STOP_TYPING", payload: data });
       // timeout = null;
-    }, 1000);
+    }, 5000);
     dispatch({ type: "DIALOG_TYPING", payload: data });
   });
 

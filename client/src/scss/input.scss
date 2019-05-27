@@ -2,8 +2,10 @@
   @extend .border-bottom;
   @extend .w-100;
   @extend .p-2;
-  @extend .mb-3;
-  @extend .mb-2;
+  // @extend .pb-2
+  @extend .my-2;
+  // @extend .m
+  // @extend .mb-2;
   
   color: $gray-600;
   border: 0;
