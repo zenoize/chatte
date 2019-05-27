@@ -2,8 +2,8 @@
   // @extend .mx-auto;
   @extend .border-md;
   @extend .col-md-6, , .col;
-  @extend .shadow;
-  @extend .p-0;
+  // @extend .shadow;
+  @extend .px-0;
   @extend .bg-white;
   @extend .d-flex, .flex-column;
   // @extend .my-md-5;
@@ -11,6 +11,11 @@
   flex-grow: 1;
   // height: 100%;
   z-index: 0;
+
+  @supports (-webkit-appearance: none) {
+    // min-height: calc(100vh - 56px);
+    padding-top: 56px !important;
+  }
 }
 
 .chat-info-bar {
@@ -81,6 +86,7 @@
   @extend .d-flex;
   @extend .border-top;
   @extend .bg-white;
+
   // @extend .p-2;
   // box-shadow: 0px -10px 100 10 black;
   // z-index: 10;

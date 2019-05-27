@@ -16,8 +16,8 @@ class App extends React.Component<any> {
     return (
       <div className="app">
         {/* <div className="d-flex"> */}
-        <div className="row h-100 py-md-5">
-          <ChatInfoBarContainer />
+        <div className="row h-100 py-md-5 sticky-top">
+          <ChatInfoBarContainer className="invisible" />
           <ChatContainer />
         </div>
 
@@ -29,7 +29,9 @@ class App extends React.Component<any> {
   renderAuthPage = () => {
     return (
       <div className="app">
-        <AuthContainer />
+        <div className="row h-100">
+          <AuthContainer />
+        </div>
       </div>
     );
   };

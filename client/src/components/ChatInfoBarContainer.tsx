@@ -23,8 +23,8 @@ class ChatInfoBarContainer extends React.Component<any> {
   };
 
   render() {
-    const { account } = this.props;
-    return <ChatInfoBar />;
+    const { account, className } = this.props;
+    return <ChatInfoBar className={className} />;
   }
 }
 

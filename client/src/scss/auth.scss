@@ -1,7 +1,7 @@
 .auth-panel {
   @extend .col-sm-5, .col-md-4, .col-lg-3, .col;
   @extend .shadow, .border;
-  @extend .pt-5, .pb-3;
+  @extend .pt-5, .pb-3, .m-auto;
   // justify-self: center;
   align-self: center;
 }

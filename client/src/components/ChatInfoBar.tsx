@@ -11,13 +11,15 @@ import ButtonGroup from "./ButtonGroup";
 
 // const messages = []
 
-export interface IChatInfoBarProps {}
+export interface IChatInfoBarProps {
+  className?: string;
+}
 
 export default class ChatInfoBar extends React.Component<IChatInfoBarProps> {
   render() {
     // const { account } = this.props
     return (
-      <div className="chat-info-bar">
+      <div className={"chat-info-bar " + (this.props.className || "")}>
         <div className="d-flex">
           <Input placeholder="Введите комнату" />
           <Button color="white" className="ml-1 rounded-pill p-1 my-auto text-primary">
@@ -26,7 +28,7 @@ export default class ChatInfoBar extends React.Component<IChatInfoBarProps> {
         </div>
         <ButtonGroup className="d-flex w-100" radius="5px">
           <Button color="primary" className="p-2">
-            <Spinner size="sm" className='mx-1' />
+            <Spinner size="sm" className="mx-1" />
             {/* <Play size="1rem" strokeWidth="4px" /> */}
             {/* <Bookmark size="1.5rem" strokeWidth="2px" className='text-white' /> */}
             {/* <Meh size="2rem" strokeWidth="2px" /> */}

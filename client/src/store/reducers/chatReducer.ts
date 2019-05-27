@@ -111,8 +111,9 @@ export default (s = initialState, action: any) => {
 
     case "DIALOG_MESSAGES_SEND_SUCCESS": {
       const msg = s.history.entity.messages.find((msg: any) => msg.randomId === action.payload.randomId);
-
-      return new Reducer(s).status("history", "send", "SUCCESS").custom(s => {
+      let r = new Reducer(s);
+      r = msg ? r.status("history", "send", "SUCCESS") : r;
+      r.custom(s => {
         return {
           ...s,
           history: {
@@ -121,11 +122,12 @@ export default (s = initialState, action: any) => {
               ...s.history.entity,
               messages: msg
                 ? s.history.entity.messages.map((m: any) => (m.randomId === action.payload.randomId ? { ...m, ...action.payload.msg, time: m.time, loading: false } : m))
-                : [...s.history.entity.messages, action.payload]
+                : [...s.history.entity.messages, action.payload.msg]
             }
           }
         };
-      }).state;
+      });
+      return r.state;
     }
     case "DIALOG_MESSAGES_NEW":
       return new Reducer(s).status("history", "send", "SUCCESS").custom(s => {
