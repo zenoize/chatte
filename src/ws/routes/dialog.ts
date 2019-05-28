@@ -42,7 +42,7 @@ export const fetchMessages: IWsApiRoute = {
   execute: async ({ socket, error, success, data }) => {
     const { id, dialogId } = socket.payload;
     const messages = await DialogMessage.find({ dialogId })
-      .sort({ time: -1 })
+      .sort({ time: 1 })
       .limit(200)
       .exec();
     // const
